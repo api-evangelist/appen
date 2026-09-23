@@ -1,0 +1,30 @@
+{
+  "provider": "appen",
+  "sources": [
+    "appen-openapi-remote.yaml"
+  ],
+  "outputs": [
+    "appen-download-api-openapi.yml",
+    "appen-internal-contributors-api-openapi.yml",
+    "appen-jobs-api-openapi.yml",
+    "appen-projects-api-openapi.yml",
+    "appen-route-units-api-openapi.yml",
+    "appen-test-questions-api-openapi.yml",
+    "appen-upload-api-openapi.yml"
+  ],
+  "archived": [
+    "archived openapi/appen-openapi-remote.yaml"
+  ],
+  "errors": [
+    "appen-openapi-remote.yaml: dangling $ref: #/components/schemas/UpdateTestQuestionRequest"
+  ],
+  "warnings": [
+    "appen-openapi-remote.yaml: info.version missing"
+  ],
+  "notes": [
+    "appen-openapi-remote.yaml: upgraded openapi 3.0.3 -> OpenAPI 3.2.0",
+    "appen-openapi-remote.yaml: declared missing tag: Internal Contributors",
+    "apis.yml register: written (+7 apis, 8 total)"
+  ],
+  "skipped": []
+}

@@ -1,0 +1,519 @@
+openapi: 3.2.0
+info:
+  title: Appen AI Data Annotation Platform (ADAP) Route Units API
+  description: '# Introduction
+
+
+    The Appen AI Data Annotation Platform (ADAP) APIs offer a structured, automated approach to ensure high-quality data labeling on a scale.'
+servers:
+- url: https://api.appen.com/
+  description: Production environment
+security:
+- TokenAuth: []
+tags:
+- name: Route Units
+  description: Unit management operations for handling individual data rows and their distribution across jobs.
+paths:
+  /v3/project-flow/projects/units:
+    post:
+      tags:
+      - Route Units
+      summary: List units in a project
+      description: 'Retrieves a paginated list of units that match the specified filters. This endpoint supports filtering, sorting, and pagination to help you query units within a project.
+
+        The filterModel in the request body can be used to specify job status values.
+
+
+        **Supported jobStatus Values**
+
+        - NEW
+
+        - JUDGABLE
+
+        - SUBMITTED
+
+        - WORKING
+
+        - ABANDONED'
+      operationId: listProjectUnits
+      parameters:
+      - name: projectId
+        in: query
+        required: true
+        description: The project ID to retrieve units from
+        schema:
+          type: string
+          format: uuid
+        example: faecd4fa-683f-402e-b7ea-8a904ae92021
+      - name: teamId
+        in: query
+        required: true
+        description: The team ID that owns the project
+        schema:
+          type: string
+          format: uuid
+        example: f6c0b8cb-de69-495c-980b-2b0e0a6ca288
+      requestBody:
+        required: true
+        description: 'Request body for filtering, sorting, and paginating units. The includeFields parameter is automatically set by the API to return only jobStatus, unitId, and source._golden fields.
+
+          '
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - startRow
+              - endRow
+              properties:
+                startRow:
+                  type: integer
+                  description: Starting row index for pagination (0-based)
+                  example: 0
+                endRow:
+                  type: integer
+                  description: Ending row index for pagination (inclusive)
+                  example: 29
+                filterModel:
+                  type: object
+                  description: 'Map of column filters. Each key is a column name, and the value is a filter object.
+
+                    Supported filter types include SET for filtering by specific values.
+
+                    '
+                  additionalProperties:
+                    type: object
+                    properties:
+                      filterType:
+                        type: string
+                        example: SET
+                      values:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                        - NEW
+                  example:
+                    jobStatus:
+                      filterType: SET
+                      values:
+                      - NEW
+                    datasetRowType:
+                      filterType: SET
+                      values:
+                      - UNIT
+                      - ''
+                sortModel:
+                  type: array
+                  description: Array of sort models for ordering results
+                  items:
+                    type: object
+                  example: []
+                queryString:
+                  type: string
+                  description: Optional query string for text search
+                  example: ''
+            examples:
+              minimal:
+                summary: Minimal request (pagination only)
+                value:
+                  startRow: 0
+                  endRow: 1
+              full:
+                summary: Full request with filters
+                value:
+                  startRow: 0
+                  endRow: 29
+                  filterModel:
+                    jobStatus:
+                      filterType: SET
+                      values:
+                      - NEW
+                    datasetRowType:
+                      filterType: SET
+                      values:
+                      - UNIT
+                      - ''
+                  sortModel: []
+                  queryString: ''
+      x-codeSamples:
+      - lang: curl
+        label: List Units in Project (Mandatory Fields Only)
+        source: "curl -X POST \"https://api.appen.com/v3/project-flow/projects/units?projectId=faecd4fa-683f-402e-b7ea-8a904ae92021&teamId=f6c0b8cb-de69-495c-980b-2b0e0a6ca288\" \\\n  -H \"Authorization: Token token=<your-api-key>\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"startRow\": 0,\n    \"endRow\": 1\n  }'\n"
+      - lang: curl
+        label: List Units in Project (Full Example)
+        source: "curl -X POST \"https://api.appen.com/v3/project-flow/projects/units?projectId=faecd4fa-683f-402e-b7ea-8a904ae92021&teamId=f6c0b8cb-de69-495c-980b-2b0e0a6ca288\" \\\n-H \"Authorization: Token token=<your-api-key>\" \\\n-H \"Content-Type: application/json\" \\\n-d '{\n\"startRow\": 0,\n\"endRow\": 29,\n\"filterModel\": {\n  \"jobStatus\": {\n    \"filterType\": \"SET\",\n    \"values\": [\"NEW\"]\n  },\n  \"datasetRowType\": {\n    \"filterType\": \"SET\",\n    \"values\": [\"UNIT\", \"\"]\n  }\n},\n\"sortModel\": [],\n\"queryString\": \"\"\n}'\n"
+      - lang: curl
+        label: List Units in Project (With Golden Units filter)
+        source: "curl -X POST \"https://api.appen.com/v3/project-flow/projects/units?projectId=faecd4fa-683f-402e-b7ea-8a904ae92021&teamId=f6c0b8cb-de69-495c-980b-2b0e0a6ca288\" \\\n-H \"Authorization: Token token=<your-api-key>\" \\\n-H \"Content-Type: application/json\" \\\n-d '{\n   \"startRow\": 0,\n   \"endRow\": 29,\n  \"filterModel\": {\n      \"datasetRowType\": {\n      \"filterType\": \"SET\",\n      \"values\": [\"UNIT\", \"\"]\n        },\n     \"source._golden\": {\n     \"filterType\": \"SET\",\n     \"values\": [\"TRUE\"]\n        }\n    },\n  \"sortModel\": [],\n  \"queryString\": \"\"\n    }'\n"
+      responses:
+        '200':
+          description: Units retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Response message
+                    example: success
+                  code:
+                    type: integer
+                    description: Response code
+                    example: 200
+                  data:
+                    type: object
+                    description: Response data containing units and pagination information
+                    properties:
+                      units:
+                        type: array
+                        description: "Array of unit objects. Each unit is represented as a map where keys are field names \n(e.g., \"jobStatus\", \"unitId\", \"source._golden\") and values are arrays of UnitValueDTO objects.\n"
+                        items:
+                          type: object
+                          additionalProperties:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                value:
+                                  type: string
+                                  description: The actual value of the field
+                                link:
+                                  type:
+                                  - string
+                                  - 'null'
+                                  description: Optional link associated with the value
+                                tagType:
+                                  type:
+                                  - string
+                                  - 'null'
+                                  description: Optional tag type for the value
+                      lastRow:
+                        type: integer
+                        description: Index of the last row returned (0-based)
+                        example: 0
+                      secondaryColumnFields:
+                        type:
+                        - array
+                        - 'null'
+                        description: Secondary column fields if any
+                        items:
+                          type: string
+                      totalElementsInData:
+                        type: integer
+                        description: Total number of elements in the dataset
+                        example: 24
+                      totalElements:
+                        type: integer
+                        description: Total number of elements matching the filter
+                        example: 24
+                      returnedUnitsCount:
+                        type: integer
+                        description: Number of units returned in this response
+                        example: 10
+                  traceId:
+                    type: string
+                    description: Trace ID for request tracking
+                    example: e51daa97-060e-4708-bddc-5d4f63204064
+                  time:
+                    type: string
+                    format: date-time
+                    description: Timestamp of the response
+                    example: '2025-08-14T10:37:19.129178Z'
+              example:
+                message: success
+                code: 200
+                data:
+                  units:
+                  - jobStatus:
+                    - value: JUDGABLE
+                      link: null
+                      tagType: null
+                    unitId:
+                    - value: d6325518-6c56-4895-9385-b6da7eb81ccd
+                      link: null
+                      tagType: null
+                    source._golden:
+                    - value: 'FALSE'
+                      link: null
+                      tagType: null
+                  lastRow: 0
+                  secondaryColumnFields: null
+                  totalElementsInData: 24
+                  totalElements: 24
+                  returnedUnitsCount: 10
+                traceId: e51daa97-060e-4708-bddc-5d4f63204064
+                time: '2025-08-14T10:37:19.129178Z'
+        '400':
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 400
+                error: Bad Request
+                message: Invalid project ID
+                path: /v3/project-flow/projects/units
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 403
+                error: Forbidden
+                message: Access denied. Check your privileges.
+                path: /v3/project-flow/projects/units
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 500
+                error: Internal Server Error
+                message: Failed to retrieve units
+                path: /v3/project-flow/projects/units
+      security:
+      - TokenAuth: []
+  /v3/project-flow/projects/send-to-job:
+    post:
+      tags:
+      - Route Units
+      summary: Send units to job
+      description: 'Sends units from a project to a specific job. You can send specific units by ID or a percentage of units, with options to carry judgments and handle conflicts.
+
+
+        ## Request Body Parameters
+
+
+        - **projectId** (required): The source project identifier
+
+        - **unitIds** (optional): List of specific unit IDs to send. Omit if using `sendEntireGroup: true` to send all units in the project.
+
+        **Note**: You can obtain unitIds from the List units in a project API response. Each unit in the response contains a `unitId` field that can be extracted and used here.
+
+        - **percentage** (optional): Percent of units to send (1-100). Used when sending a subset of units
+
+        - **sendEntireGroup** (optional): If `true`, sends all units in the unit groups to which the specified units belong to. When `true`, `unitIds` is ignored
+
+        - **carryJudgment** (optional): If `true`, existing judgments from previous jobs (e.g., work job) will be carried over to the target job (e.g., QA job). This is useful for routing judgments from work to QA jobs.
+
+        - **overwriteJudgment** (optional): If `true`, the target job (e.g., QA job) can edit/modify the carried judgments. If `false`, judgments are read-only.
+
+
+        ## Use Cases
+
+
+        - **Work to QA Routing**: Set `carryJudgment: true` and `overwriteJudgment: true` to route units with their judgments from a work job to a QA job where QA can review and modify the judgments
+
+        - **Data Transfer**: Set `carryJudgment: false` to send units without any existing judgment data
+
+        - **Read-only Review**: Set `carryJudgment: true` and `overwriteJudgment: false` to allow viewing but not editing of carried judgments
+
+
+        ## Related APIs
+
+
+        - **List units in a project**: Use the List units in a project API to retrieve available units and extract their `unitId` values for use in this endpoint.
+
+
+        **Note:**
+
+        - Invoke ‘Pause Job’ API at first before actually sending units to Job. The units can be retrieved using the ‘List units in a project’ API'
+      operationId: sendUnitsToJob
+      parameters:
+      - name: jobId
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: The target job's ID
+        example: 68624cd9-8899-4107-bc3a-f69d91db4d3e
+      - name: ignoreConflict
+        in: query
+        required: true
+        schema:
+          type: boolean
+        description: If true, units already in another job will be moved to this job; otherwise, conflicts cause errors
+        example: false
+      x-codeSamples:
+      - lang: curl
+        label: Send Units to Job
+        source: "curl -X POST \"https://api.appen.com/v3/project-flow/projects/send-to-job?jobId=<jobId>&ignoreConflict=false\" \\\n  -H \"Authorization: Token token=<your-api-key>\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"projectId\": \"aeeabc7b-2e0e-4325-a9c2-e8d33eb3c20c\",\n    \"unitIds\": [\n      \"6206f273-9a6f-43f6-9111-8db2d6c7dcb8\",\n      \"2afcca3f-0fa6-46d3-ac1b-97c734e8521e\",\n      \"a92c1ee2-1cc1-4f44-b847-b2f778d4eb88\",\n      \"929256b6-98b6-469b-8397-cfa7d117c6c3\"\n    ],\n    \"percentage\": 100,\n    \"sendEntireGroup\": false,\n    \"carryJudgment\": true,\n    \"overwriteJudgment\": true\n  }'\n"
+      - lang: curl
+        label: Send All Units in the Project to a Job
+        source: "curl -X POST \"https://api.appen.com/v3/project-flow/projects/send-to-job?jobId=<jobId>&ignoreConflict=false\" \\\n  -H \"Authorization: Token token=<your-api-key>\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n      \"projectId\": \"aeeabc7b-2e0e-4325-a9c2-e8d33eb3c20c\",\n      \"filterModel\": {},\n      \"queryString\": \"\",\n      \"percentage\": 100,\n      \"sendEntireGroup\": false,\n      \"carryJudgment\": true,\n      \"overwriteJudgment\": true\n      }'\n"
+      - lang: curl
+        label: Send Only Specific Units to a Job
+        source: "curl -X POST \"https://api.appen.com/v3/project-flow/projects/send-to-job?jobId=<jobId>&ignoreConflict=false\" \\\n  -H \"Authorization: Token token=<your-api-key>\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n      \"projectId\": \"aeeabc7b-2e0e-4325-a9c2-e8d33eb3c20c\",\n       \"filterModel\": {\n        \"rowNumber\": {\n          \"filterType\": \"NUMBER\",\n          \"values\": [21],\n          \"criteria\": \"greaterThanOrEqual\"\n           },\n        \"sourceFileBatchNumber\": {\n          \"filterType\": \"NUMBER\",\n          \"values\": [1],\n          \"criteria\": \"equals\"\n           },\n        \"datasetRowType\": {\n          \"filterType\": \"SET\",\n          \"values\": [\"UNIT\"]\n           }\n            },\n      \"queryString\": \"\",\n      \"percentage\": 100,\n      \"sendEntireGroup\": false,\n      \"carryJudgment\": true,\n      \"overwriteJudgment\": true\n      }'\n"
+      responses:
+        '200':
+          description: Units sent to job successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        conflictJobNames:
+                          type: array
+                          items:
+                            type: string
+                          description: Any job names where conflicts occurred (if ignored)
+                          example: []
+                        warnings:
+                          type:
+                          - string
+                          - 'null'
+                          example: null
+                        total:
+                          type:
+                          - integer
+                          - 'null'
+                          example: null
+                        error:
+                          type: boolean
+                          example: false
+              example:
+                message: success
+                code: 200
+                data:
+                  conflictJobNames: []
+                  warnings: null
+                  total: null
+                  error: false
+                traceId: trace-123
+                time: '2025-07-17T09:22:18.194069Z'
+        '400':
+          description: Bad request - Conflict or validation errors
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Response'
+                - type: object
+                  properties:
+                    data:
+                      type:
+                      - object
+                      - 'null'
+              example:
+                message: Exist conflict jobs.
+                code: 400
+                data: null
+                traceId: trace-123
+                time: '2025-07-17T09:22:49.237368Z'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 403
+                error: Forbidden
+                message: Access denied. Check your privileges.
+                path: /v3/project-flow/projects/send-to-job
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 500
+                error: Internal Server Error
+                message: Failed to send units to job
+                path: /v3/project-flow/projects/send-to-job
+      security:
+      - TokenAuth: []
+components:
+  schemas:
+    Response:
+      type: object
+      required:
+      - message
+      - code
+      - data
+      - time
+      properties:
+        message:
+          type: string
+          description: Response message
+          example: success
+        code:
+          type: integer
+          description: HTTP status code
+          example: 200
+        data:
+          description: Response data (type varies by endpoint)
+        traceId:
+          type:
+          - string
+          - 'null'
+          description: Request trace identifier for debugging
+          example: null
+        time:
+          type: string
+          format: date-time
+          description: Response timestamp
+          example: '2025-07-02T10:02:04.813876Z'
+    Error:
+      type: object
+      required:
+      - timestamp
+      - status
+      - error
+      - message
+      - path
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the error occurred
+        status:
+          type: integer
+          description: HTTP status code
+        error:
+          type: string
+          description: HTTP status text
+        message:
+          type: string
+          description: Human-readable error message
+        path:
+          type: string
+          description: API endpoint path that generated the error
+        trace:
+          type: string
+          description: Stack trace (only in development)
+      example:
+        timestamp: '2025-07-01T10:28:59.893+00:00'
+        status: 500
+        error: Internal Server Error
+        message: Failed to update job
+        path: /publicapi/work-service/jobs
+  securitySchemes:
+    TokenAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+      description: 'API Token authentication. Pass your API token in the Authorization header:
+
+        `Authorization: Token token=your-api-token-here`
+
+        '

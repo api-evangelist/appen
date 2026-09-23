@@ -1,0 +1,328 @@
+{
+  "@context": {
+    "@vocab": "https://appen.com/schema#",
+    "schema": "https://schema.org/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "dcterms": "http://purl.org/dc/terms/",
+    "appen": "https://appen.com/schema#",
+    "Error": "appen:Error",
+    "timestamp": {
+      "@id": "appen:timestamp",
+      "@type": "xsd:dateTime"
+    },
+    "status": {
+      "@id": "appen:status",
+      "@type": "xsd:integer"
+    },
+    "error": {
+      "@id": "appen:error",
+      "@type": "xsd:string"
+    },
+    "message": {
+      "@id": "appen:message",
+      "@type": "xsd:string"
+    },
+    "path": {
+      "@id": "appen:path",
+      "@type": "xsd:string"
+    },
+    "trace": {
+      "@id": "appen:trace",
+      "@type": "xsd:string"
+    },
+    "ErrorResponse": "appen:ErrorResponse",
+    "errorMessage": {
+      "@id": "appen:errorMessage",
+      "@type": "xsd:string"
+    },
+    "traceId": {
+      "@id": "appen:traceId",
+      "@type": "xsd:string"
+    },
+    "ConflictResponse": "appen:ConflictResponse",
+    "code": {
+      "@id": "appen:code",
+      "@type": "xsd:string"
+    },
+    "SimpleError": "appen:SimpleError",
+    "JobDTO": "appen:JobDTO",
+    "id": {
+      "@id": "appen:id",
+      "@type": "xsd:string"
+    },
+    "version": {
+      "@id": "appen:version",
+      "@type": "xsd:integer"
+    },
+    "projectId": {
+      "@id": "appen:projectId",
+      "@type": "xsd:string"
+    },
+    "teamId": {
+      "@id": "appen:teamId",
+      "@type": "xsd:string"
+    },
+    "title": {
+      "@id": "appen:title",
+      "@type": "xsd:string"
+    },
+    "displayId": {
+      "@id": "appen:displayId",
+      "@type": "xsd:integer"
+    },
+    "cycleNumber": {
+      "@id": "appen:cycleNumber",
+      "@type": "xsd:integer"
+    },
+    "feedback": {
+      "@id": "appen:feedback",
+      "@type": "xsd:string"
+    },
+    "flowId": {
+      "@id": "appen:flowId",
+      "@type": "xsd:string"
+    },
+    "type": {
+      "@id": "appen:type",
+      "@type": "xsd:string"
+    },
+    "state": {
+      "@id": "appen:state",
+      "@type": "xsd:string"
+    },
+    "activeStatus": {
+      "@id": "appen:activeStatus",
+      "@type": "xsd:string"
+    },
+    "assignmentLeaseExpiry": {
+      "@id": "appen:assignmentLeaseExpiry",
+      "@type": "xsd:integer"
+    },
+    "judgmentsPerRow": {
+      "@id": "appen:judgmentsPerRow",
+      "@type": "xsd:integer"
+    },
+    "rowsPerPage": {
+      "@id": "appen:rowsPerPage",
+      "@type": "xsd:integer"
+    },
+    "displayContributorName": {
+      "@id": "appen:displayContributorName",
+      "@type": "xsd:boolean"
+    },
+    "judgmentModifiable": {
+      "@id": "appen:judgmentModifiable",
+      "@type": "xsd:boolean"
+    },
+    "sendBackOp": {
+      "@id": "appen:sendBackOp",
+      "@type": "xsd:string"
+    },
+    "copiedFrom": {
+      "@id": "appen:copiedFrom",
+      "@type": "xsd:string"
+    },
+    "maxJudgmentPerContributorEnabled": {
+      "@id": "appen:maxJudgmentPerContributorEnabled",
+      "@type": "xsd:boolean"
+    },
+    "maxJudgmentPerContributor": {
+      "@id": "appen:maxJudgmentPerContributor",
+      "@type": "xsd:integer"
+    },
+    "maxSkippablePromptNum": {
+      "@id": "appen:maxSkippablePromptNum",
+      "@type": "xsd:integer"
+    },
+    "unitSegmentType": {
+      "@id": "appen:unitSegmentType",
+      "@type": "xsd:string"
+    },
+    "internalSecret": {
+      "@id": "appen:internalSecret",
+      "@type": "xsd:string"
+    },
+    "createdAt": {
+      "@id": "appen:createdAt",
+      "@type": "xsd:dateTime"
+    },
+    "allowSelfQa": {
+      "@id": "appen:allowSelfQa",
+      "@type": "xsd:boolean"
+    },
+    "allowAbandonUnits": {
+      "@id": "appen:allowAbandonUnits",
+      "@type": "xsd:boolean"
+    },
+    "maxNumberOfAllowedAbandonment": {
+      "@id": "appen:maxNumberOfAllowedAbandonment",
+      "@type": "xsd:integer"
+    },
+    "sendAbandonedUnitsBackToJob": {
+      "@id": "appen:sendAbandonedUnitsBackToJob",
+      "@type": "xsd:boolean"
+    },
+    "instruction": {
+      "@id": "appen:instruction",
+      "@type": "xsd:string"
+    },
+    "validationRuleId": {
+      "@id": "appen:validationRuleId",
+      "@type": "xsd:string"
+    },
+    "enableBlueTooth": {
+      "@id": "appen:enableBlueTooth",
+      "@type": "xsd:boolean"
+    },
+    "launchPlatform": {
+      "@id": "appen:launchPlatform",
+      "@container": "@list"
+    },
+    "latestAppVersion": {
+      "@id": "appen:latestAppVersion",
+      "@type": "xsd:boolean"
+    },
+    "reusablePrompt": {
+      "@id": "appen:reusablePrompt",
+      "@type": "xsd:boolean"
+    },
+    "reusablePin": {
+      "@id": "appen:reusablePin",
+      "@type": "xsd:boolean"
+    },
+    "totalSessionNumber": {
+      "@id": "appen:totalSessionNumber",
+      "@type": "xsd:integer"
+    },
+    "firstLaunchTime": {
+      "@id": "appen:firstLaunchTime",
+      "@type": "xsd:dateTime"
+    },
+    "promptsEnabling": {
+      "@id": "appen:promptsEnabling",
+      "@type": "xsd:string"
+    },
+    "reviewReasons": {
+      "@id": "appen:reviewReasons",
+      "@type": "xsd:string"
+    },
+    "reviewReasonOption": {
+      "@id": "appen:reviewReasonOption",
+      "@type": "xsd:string"
+    },
+    "parentJobId": {
+      "@id": "appen:parentJobId",
+      "@type": "xsd:string"
+    },
+    "unitGroupOption": {
+      "@id": "appen:unitGroupOption",
+      "@type": "xsd:string"
+    },
+    "appendable": {
+      "@id": "appen:appendable",
+      "@type": "xsd:boolean"
+    },
+    "enableShareLink": {
+      "@id": "appen:enableShareLink",
+      "@type": "xsd:boolean"
+    },
+    "payRateType": {
+      "@id": "appen:payRateType",
+      "@type": "xsd:string"
+    },
+    "invoiceStatisticsType": {
+      "@id": "appen:invoiceStatisticsType",
+      "@type": "xsd:string"
+    },
+    "operateHistoryId": {
+      "@id": "appen:operateHistoryId",
+      "@type": "xsd:string"
+    },
+    "jobCml": {
+      "@id": "appen:jobCml"
+    },
+    "jobFilter": {
+      "@id": "appen:jobFilter"
+    },
+    "jobCrowd": {
+      "@id": "appen:jobCrowd"
+    },
+    "testQuestionSettings": {
+      "@id": "appen:testQuestionSettings"
+    },
+    "timeLimitThresholdSec": {
+      "@id": "appen:timeLimitThresholdSec",
+      "@type": "xsd:integer"
+    },
+    "enableExternalAutoAssignJob": {
+      "@id": "appen:enableExternalAutoAssignJob",
+      "@type": "xsd:boolean"
+    },
+    "enableExpirationTime": {
+      "@id": "appen:enableExpirationTime",
+      "@type": "xsd:integer"
+    },
+    "expirationDurationSet": {
+      "@id": "appen:expirationDurationSet",
+      "@type": "xsd:integer"
+    },
+    "expirationDurationUpdate": {
+      "@id": "appen:expirationDurationUpdate",
+      "@type": "xsd:integer"
+    },
+    "threshold": {
+      "@id": "appen:threshold",
+      "@type": "xsd:decimal"
+    },
+    "qaAdvancedOptions": {
+      "@id": "appen:qaAdvancedOptions"
+    },
+    "active": {
+      "@id": "appen:active",
+      "@type": "xsd:boolean"
+    },
+    "alias": {
+      "@id": "appen:alias",
+      "@type": "xsd:string"
+    },
+    "running": {
+      "@id": "appen:running",
+      "@type": "xsd:boolean"
+    },
+    "draft": {
+      "@id": "appen:draft",
+      "@type": "xsd:boolean"
+    },
+    "segmented": {
+      "@id": "appen:segmented",
+      "@type": "xsd:boolean"
+    },
+    "appenConnectCrowd": {
+      "@id": "appen:appenConnectCrowd",
+      "@type": "xsd:boolean"
+    },
+    "multipleJudgement": {
+      "@id": "appen:multipleJudgement",
+      "@type": "xsd:boolean"
+    },
+    "dynamicJudgements": {
+      "@id": "appen:dynamicJudgements"
+    },
+    "Response": "appen:Response",
+    "data": {
+      "@id": "appen:data"
+    },
+    "time": {
+      "@id": "appen:time",
+      "@type": "xsd:dateTime"
+    },
+    "UploadErrorCodes": "appen:UploadErrorCodes"
+  },
+  "@type": "schema:Dataset",
+  "schema:name": "Appen API JSON-LD context",
+  "schema:description": "A JSON-LD @context for the objects Appen's own API contract declares: one class per component schema, one property per declared field, typed from the contract. Derived by script (derive-json-ld.py, 2026-09-22) from openapi/appen-openapi-remote.yaml.",
+  "dcterms:created": "2026-09-22",
+  "dcterms:source": [
+    "openapi/appen-openapi-remote.yaml"
+  ]
+}

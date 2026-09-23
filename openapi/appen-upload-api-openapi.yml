@@ -1,0 +1,453 @@
+openapi: 3.2.0
+info:
+  title: Appen AI Data Annotation Platform (ADAP) Upload API
+  description: '# Introduction
+
+
+    The Appen AI Data Annotation Platform (ADAP) APIs offer a structured, automated approach to ensure high-quality data labeling on a scale.'
+servers:
+- url: https://api.appen.com/
+  description: Production environment
+security:
+- TokenAuth: []
+tags:
+- name: Upload
+  description: File upload operations for importing datasets and data into your projects and jobs.
+paths:
+  /v3/jobs/upload.json:
+    post:
+      tags:
+      - Upload
+      summary: Upload unit data to an existing project
+      description: 'Uploads a CSV file to an existing project. The API requires `projectId` and `fileName` as query parameters. Returns upload status and file metadata, including a status polling URL.
+
+
+        **Supported Data Types:**
+
+        - **Units**: Individual data rows for annotation tasks
+
+        - **Unit Groups**: Collections of related units that can be processed together
+
+
+        **Date Format Support:**
+
+        Only CSV files with following date formats are supported:
+
+        - `yyyy/MM/dd` (e.g., 2025/03/14)
+
+        - `yyyy/MM/dd HH:mm:ss` (e.g., 2025/03/14 07:52:46)
+
+        - `yyyy-MM-dd` (e.g., 2025-03-14)
+
+        - `yyyy-MM-ddTHH:mm:ss` (e.g., 2025-03-14T07:52:46)
+
+
+        The status of the upload can be checked by triggering the **Get the status of an uploaded file/dataset API**.'
+      operationId: uploadDatasetToProject
+      parameters:
+      - name: projectId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Project identifier
+        example: eb4bba9b-1e0b-4565-a74b-0db3820b8d8c
+      - name: fileName
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Name of the file uploaded
+        example: abc.csv
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X POST "https://api.appen.com/v3/jobs/upload.json?projectId=<projectId>&fileName=<fileName>" \
+
+          -H "Authorization: Token token=<your-api-key>" \
+
+          -H "Content-Type: text/csv" \
+
+          -T "@/path/to/your/file.csv"
+
+          '
+      responses:
+        '201':
+          description: DataSet Upload is Triggered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 201
+                  details:
+                    type: string
+                    example: DATASET UPLOAD IS TRIGGERED. Please use Status Poll URL to check the upload status
+                  fileId:
+                    type: string
+                    example: 26eaf8c2-a608-4f4d-aa5d-baebc489bc19
+                  projectId:
+                    type: string
+                    example: eb4bba9b-1e0b-4565-a74b-0db3820b8d8c
+                  batchNum:
+                    type: integer
+                    example: 1
+                  statusPollUrl:
+                    type: string
+                    example: /jobs/upload/status?fileId=26eaf8c2-a608-4f4d-aa5d-baebc489bc19&teamId=d124fcdf-3707-4caf-babb-3da1f5f1ec1e
+                  teamId:
+                    type: string
+                    example: d124fcdf-3707-4caf-babb-3da1f5f1ec1e
+                  fileName:
+                    type: string
+                    example: abc.csv
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: '2025-07-03T19:13:45.456074Z'
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    example: '2025-07-03T19:21:23.743529Z'
+        '400':
+          description: Bad request - Missing file or invalid CSV
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unsupportedFormat:
+                  summary: Unsupported file format
+                  value:
+                    status: 400
+                    errorCode: 2003
+                    errorMessage: Unsupported file format. Please upload a CSV file.
+                    traceId: 4a4ce5fc11ccf8423f8fc55921d93f7b
+                    timestamp: '2025-07-07T06:30:14.774186Z'
+                fileNotFound:
+                  summary: File not uploaded
+                  value:
+                    status: 400
+                    errorCode: 2018
+                    errorMessage: CSV File Not Found in the request/Uploaded CSV File is Empty. Please upload a valid non-empty CSV file.
+                    traceId: e1b2c3d4f5a6b7c8d9e0f1a2b3c4d5e6
+                    timestamp: '2025-07-07T06:31:00.000000Z'
+                invalidDateFormat:
+                  summary: Invalid date format found in the CSV file
+                  value:
+                    status: 400
+                    errorCode: 2006
+                    errorMessage: 'Invalid date format in row {0} column ''{1}'': ''{2}''. Allowed formats: yyyy/MM/dd, yyyy/MM/dd HH:mm:ss, yyyy-MM-dd, yyyy-MM-ddTHH:mm:ss'
+                    traceId: e1b2c3d4f5a6b7c8d9e0f1a2b3c4d5e6
+                    timestamp: '2025-07-07T06:31:00.000000Z'
+                UploadNotInitiatedError:
+                  summary: Missing Required parameter in the request
+                  value:
+                    status: 400
+                    errorCode: 2007
+                    errorMessage: 'missing required parameter: '
+                    traceId: e1b2c3d4f5a6b7c8d9e0f1a2b3c4d5e6
+                    timestamp: '2025-07-07T06:31:00.000000Z'
+                fileHeaderEmptyInFile:
+                  summary: File Headers are empty
+                  value:
+                    status: 400
+                    errorCode: 2008
+                    errorMessage: File Headers are empty
+                    traceId: e1b2c3d4f5a6b7c8d9e0f1a2b3c4d5e6
+                    timestamp: '2025-07-07T06:31:00.000000Z'
+                fileHeaderContainsEmptyColumns:
+                  summary: File Header contains empty columns
+                  value:
+                    status: 400
+                    errorCode: 2009
+                    errorMessage: File Header contains empty columns
+                    traceId: e1b2c3d4f5a6b7c8d9e0f1a2b3c4d5e6
+                    timestamp: '2025-07-07T06:31:00.000000Z'
+                fileHeaderContainsDuplicateColumns:
+                  summary: File Header contains duplicate columns
+                  value:
+                    status: 400
+                    errorCode: 2010
+                    errorMessage: File Header contains duplicate columns
+                    traceId: e1b2c3d4f5a6b7c8d9e0f1a2b3c4d5e6
+                    timestamp: '2025-07-07T06:31:00.000000Z'
+                fileHeaderExceedMaxLimit:
+                  summary: File Headers Max Limit Exceeded
+                  value:
+                    status: 400
+                    errorCode: 2011
+                    errorMessage: File Headers Max Limit Exceeded
+                    traceId: e1b2c3d4f5a6b7c8d9e0f1a2b3c4d5e6
+                    timestamp: '2025-07-07T06:31:00.000000Z'
+        '401':
+          description: Unauthorized - Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleError'
+              example:
+                error: You need to sign in or sign up before continuing.
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleError'
+              example:
+                error: Access denied. Check your privileges.
+        '409':
+          description: A file is already being uploaded to this project. Please try again in sometime.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictResponse'
+              example:
+                code: DATASET_UPLOAD_FAILED
+                message: A file is already being uploaded to this project 9034a037-9ee3-4e75-9ec9-d01f73928422. Please try again later.
+        '422':
+          description: Unsupported file format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unsupportedFormat:
+                  summary: Unit Limit Reached in CSV File
+                  value:
+                    status: 422
+                    errorCode: 2001
+                    errorMessage: Unit Limit Reached. You have uploaded the maximum amount of units (250000) allowed in job.
+                    traceId: aedc22fa7ff72c8086a11e69c2c7209c
+                    timestamp: '2025-07-07T06:51:46.626387Z'
+                csvFileValidationError:
+                  summary: CSV File Validation Error
+                  value:
+                    status: 422
+                    errorCode: 2002
+                    errorMessage: 'Validation Error: {0}'
+                    traceId: aedc22fa7ff72c8086a11e69c2c7209c
+                    timestamp: '2025-07-07T06:51:46.626387Z'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 500
+                errorMessage: Internal server error.
+                traceId: b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6
+                timestamp: '2025-07-07T07:00:00.000000Z'
+  /v3/jobs/upload/status:
+    get:
+      tags:
+      - Upload
+      summary: Get the status of an uploaded file/dataset
+      description: Returns the status and metadata for a previously uploaded file. Use the statusPollUrl / Use fileId, teamId from the upload response to poll for status.
+      operationId: getUploadStatus
+      parameters:
+      - name: fileId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: File identifier
+        example: 26eaf8c2-a608-4f4d-aa5d-baebc489bc19
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Team identifier
+        example: d124fcdf-3707-4caf-babb-3da1f5f1ec1e
+      x-codeSamples:
+      - lang: curl
+        label: Get Upload Status
+        source: "curl -X GET \"https://api.appen.com/v3/jobs/upload/status?fileId=<fileId>&teamId=<teamId>\" \\\n  -H \"Authorization: Token token=<your-api-key>\"\n"
+      responses:
+        '200':
+          description: Upload completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fileId:
+                    type: string
+                    example: 26eaf8c2-a608-4f4d-aa5d-baebc489bc19
+                  teamId:
+                    type: string
+                    example: d124fcdf-3707-4caf-babb-3da1f5f1ec1e
+                  status:
+                    type: string
+                    example: UPLOADED
+                  details:
+                    type: string
+                    example: Dataset Uploaded Successfully
+                  fileName:
+                    type: string
+                    example: abc.csv
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: '2025-07-03T19:13:45.456074Z'
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    example: '2025-07-03T19:21:23.743529Z'
+        '202':
+          description: Upload in progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fileId:
+                    type: string
+                  teamId:
+                    type: string
+                  status:
+                    type: string
+                  details:
+                    type: string
+                  fileName:
+                    type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+              example:
+                fileId: 9fddf60d-9efa-429c-b84e-b4bb9d9bf807
+                teamId: d124fcdf-3707-4caf-babb-3da1f5f1ec1e
+                status: UPLOADING
+                details: Upload in progress
+                fileName: newfile.csv
+                createdAt: '2025-07-07T07:28:21.409970Z'
+                updatedAt: '2025-07-07T07:28:41.553288Z'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  errorMessage:
+                    type: string
+                  traceId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+              example:
+                status: 400
+                errorMessage: 'Upload not initiated: missing required parameter: fileId'
+                traceId: 2ccc9b70af6feeeb177190672fb3e69c
+                timestamp: '2025-07-07T07:30:32.557052Z'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: Access denied. Check your privileges.
+        '404':
+          description: File not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                  fileId:
+                    type: string
+                  teamId:
+                    type: string
+                  status:
+                    type: string
+                  details:
+                    type: string
+              example:
+                statusCode: 404
+                fileId: 9fddf60d-9efa-429c-b84e-b4bb9d9bf807
+                teamId: d124fcdf-3707-4caf-babb-3da1f5f1ec1e
+                status: UPLOAD_FAILED
+                details: File not found or inaccessible.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  errorMessage:
+                    type: string
+                  traceId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+              example:
+                status: 500
+                errorMessage: Internal Server Error.
+                traceId: e7f6d4c3b2a1f09876543210abcdef12
+                timestamp: '2025-07-07T07:05:00.000000Z'
+components:
+  schemas:
+    SimpleError:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
+    ErrorResponse:
+      type: object
+      required:
+      - status
+      - errorMessage
+      - traceId
+      - timestamp
+      properties:
+        status:
+          type: integer
+        errorMessage:
+          type: string
+        traceId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    ConflictResponse:
+      type: object
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+  securitySchemes:
+    TokenAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+      description: 'API Token authentication. Pass your API token in the Authorization header:
+
+        `Authorization: Token token=your-api-token-here`
+
+        '

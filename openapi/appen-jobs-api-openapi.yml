@@ -1,0 +1,2178 @@
+openapi: 3.2.0
+info:
+  title: Appen AI Data Annotation Platform (ADAP) Jobs API
+  description: '# Introduction
+
+
+    The Appen AI Data Annotation Platform (ADAP) APIs offer a structured, automated approach to ensure high-quality data labeling on a scale.'
+servers:
+- url: https://api.appen.com/
+  description: Production environment
+security:
+- TokenAuth: []
+tags:
+- name: Jobs
+  description: Job management operations for creating, configuring, and controlling data annotation workflows.
+paths:
+  /v3/jobs/jobs.json:
+    post:
+      tags:
+      - Jobs
+      summary: Create a new job
+      description: 'Initializes a new job within a project. Many fields are auto-populated and cannot be overridden.
+
+
+        **Supported Job Types:**
+
+        - **WORK**: Standard work jobs for data collection and annotation
+
+        - **QA**: Quality assurance/Leading QA jobs
+
+
+        **Current Limitations:**
+
+        - Work Jobs requiring Ontology and qualification jobs will be supported in next version of the release
+
+        - By default the created Jobs will be in ''Draft'' status
+
+        - Job type must be either WORK or QA (other types not supported)'
+      operationId: createJob
+      x-codeSamples:
+      - lang: curl
+        label: Create Job
+        source: "curl -X POST \"https://api.appen.com/v3/jobs/jobs.json\" \\\n  -H \"Authorization: Token token=<your-api-key>\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"title\": \"Your Job Title\",\n    \"projectId\": \"e74c1b9d-16ff-4a29-8c4c-e3147877de1b\",\n    \"type\": \"WORK\"\n  }'\n"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - title
+              - projectId
+              - type
+              properties:
+                title:
+                  type: string
+                  description: Title for the new job - must be unique within the project (required)
+                  example: Your Job Title
+                projectId:
+                  type: string
+                  format: uuid
+                  description: ID of the project where the job will be created (required)
+                  example: e74c1b9d-16ff-4a29-8c4c-e3147877de1b
+                type:
+                  type: string
+                  description: Job type - must be either WORK or QA (required)
+                  enum:
+                  - WORK
+                  - QA
+                  example: WORK
+            examples:
+              work_job:
+                summary: Create a WORK job
+                value:
+                  title: My Work Job
+                  projectId: e74c1b9d-16ff-4a29-8c4c-e3147877de1b
+                  type: WORK
+              qa_job:
+                summary: Create a QA job
+                value:
+                  title: My QA Job
+                  projectId: e74c1b9d-16ff-4a29-8c4c-e3147877de1b
+                  type: QA
+      responses:
+        '200':
+          description: Job created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Response'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/JobDTO'
+              example:
+                message: success
+                data:
+                  id: 68624cd9-8899-4107-bc3a-f69d91db4d3e
+                  projectId: e74c1b9d-16ff-4a29-8c4c-e3147877de1b
+                  teamId: f6c0b8cb-de69-495c-980b-2b0e0a6ca288
+                  title: Your Job Title
+                  type: WORK
+                  state: DRAFT
+                  feedback: DISABLED
+                  assignmentLeaseExpiry: 1800
+                  rowsPerPage: 5
+                  judgmentsPerRow: 1
+                  sendBackOp: SEND_BACK_TO_SAME_CONTRIBUTOR
+                  judgmentModifiable: false
+                  allowSelfQa: false
+                  allowAbandonUnits: true
+                  createdAt: '2025-07-09T03:19:20Z'
+                code: 200
+                time: '2025-07-09T03:19:22Z'
+        '400':
+          description: Bad request - Missing required fields or validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missing_project:
+                  summary: Missing project
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: Project is required
+                    path: /v3/jobs/jobs.json
+                missing_title:
+                  summary: Missing title
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: Job title is required
+                    path: /v3/jobs/jobs.json
+                invalid_project_id:
+                  summary: Invalid project ID
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: Invalid project Id
+                    path: /v3/jobs/jobs.json
+                duplicate_title:
+                  summary: Job title already exists
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: Job title already exists
+                    path: /v3/jobs/jobs.json
+                invalid_job_type:
+                  summary: Invalid job type
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: Job type must be either WORK or QA
+                    path: /v3/jobs/jobs.json
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 403
+                error: Forbidden
+                message: Access denied. Check your privileges.
+                path: /v3/jobs/jobs.json
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 500
+                error: Internal Server Error
+                message: Failed to create job
+                path: /v3/jobs/jobs.json
+      security:
+      - TokenAuth: []
+  /v3/project-flow/projects/jobs/copy-job:
+    post:
+      tags:
+      - Jobs
+      summary: Copy an existing job within a project
+      description: 'Creates a copy of an existing job within the same project.
+
+        This endpoint allows you to duplicate job configurations including design, contributor settings,
+
+        and row settings, making it easy to create similar jobs without starting from scratch.
+
+
+        **What gets copied:**
+
+        - Basic job metadata (title, type, description)
+
+        - Job design/CML configuration (if `DESIGN` is included in `types`)
+
+        - Contributor settings (if `CROWD_SETTINGS` is included in `types`)
+
+        - Row settings and pricing configuration (if `PRICE_AND_ROW` is included in `types`)
+
+        - Quality/Leading QA settings (if `QUALITY_SETTINGS` is included in `types`)
+
+
+        **Important Notes:**
+
+        - The copied job will be created in `DRAFT` status
+
+        - Jobs can only be copied within the same project (source job and target project must match)
+
+        - The job title must be unique within the project
+
+        - The `appendTo` field must be set to `project_data_source`
+
+
+        **Limitations**
+
+        - Only WORK jobs and Leading QA jobs can be copied. Copying of following QA jobs will be supported in the further releases.
+
+
+        **Validation:**
+
+        - Only allowed values for `types`: `DESIGN`, `CROWD_SETTINGS`, `PRICE_AND_ROW`, `QUALITY_SETTINGS`
+
+        - `QUALITY_SETTINGS` can only be used when copying from a QA/Leading QA job (not WORK jobs)'
+      operationId: copyJob
+      x-codeSamples:
+      - lang: curl
+        label: Copy WORK Job with All Settings
+        source: "curl -X POST \"https://api.appen.com/v3/project-flow/projects/jobs/copy-job?teamId=f6c0b8cb-de69-495c-980b-2b0e0a6ca288\" \\\n  -H \"Authorization: Token token=<your-api-key>\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"copiedFrom\": \"63311198-5481-4312-ae33-f9fcf1423191\",\n    \"projectId\": \"fbff3f10-7105-4e52-afef-00fe21a3100e\",\n    \"title\": \"Copy of My Work Job\",\n    \"appendTo\": \"project_data_source\",\n    \"types\": [\"DESIGN\", \"CROWD_SETTINGS\", \"PRICE_AND_ROW\"]\n  }'\n"
+      - lang: curl
+        label: Copy Leading QA Job with All Settings
+        source: "curl -X POST \"https://api.appen.com/v3/project-flow/projects/jobs/copy-job?teamId=cf22e84f-06c8-4955-b626-1c47d245a176\" \\\n  -H \"Authorization: Token token=<your-api-key>\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"copiedFrom\": \"e19bc365-aa0e-4a23-9188-a2ac11b7016d\",\n    \"projectId\": \"567ac5fa-b7bf-454c-9459-4e878a5b0280\",\n    \"title\": \"Copy of Leading QA Job\",\n    \"appendTo\": \"project_data_source\",\n    \"types\": [\"QUALITY_SETTINGS\", \"DESIGN\", \"CROWD_SETTINGS\", \"PRICE_AND_ROW\"]\n  }'\n"
+      - lang: curl
+        label: Copy Job with Design Only
+        source: "curl -X POST \"https://api.appen.com/v3/project-flow/projects/jobs/copy-job?teamId=f6c0b8cb-de69-495c-980b-2b0e0a6ca288\" \\\n  -H \"Authorization: Token token=<your-api-key>\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"copiedFrom\": \"63311198-5481-4312-ae33-f9fcf1423191\",\n    \"projectId\": \"fbff3f10-7105-4e52-afef-00fe21a3100e\",\n    \"title\": \"Job with Same Design\",\n    \"appendTo\": \"project_data_source\",\n    \"types\": [\"DESIGN\"]\n  }'\n"
+      - lang: curl
+        label: Copy Job with Crowd Settings Only
+        source: "curl -X POST \"https://api.appen.com/v3/project-flow/projects/jobs/copy-job?teamId=f6c0b8cb-de69-495c-980b-2b0e0a6ca288\" \\\n  -H \"Authorization: Token token=<your-api-key>\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"copiedFrom\": \"63311198-5481-4312-ae33-f9fcf1423191\",\n    \"projectId\": \"fbff3f10-7105-4e52-afef-00fe21a3100e\",\n    \"title\": \"Job with Same Crowd Settings\",\n    \"appendTo\": \"project_data_source\",\n    \"types\": [\"CROWD_SETTINGS\"]\n  }'\n"
+      - lang: curl
+        label: Copy Job with Row Settings Only
+        source: "curl -X POST \"https://api.appen.com/v3/project-flow/projects/jobs/copy-job?teamId=f6c0b8cb-de69-495c-980b-2b0e0a6ca288\" \\\n  -H \"Authorization: Token token=<your-api-key>\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"copiedFrom\": \"63311198-5481-4312-ae33-f9fcf1423191\",\n    \"projectId\": \"fbff3f10-7105-4e52-afef-00fe21a3100e\",\n    \"title\": \"Job with Same Row Settings\",\n    \"appendTo\": \"project_data_source\",\n    \"types\": [\"PRICE_AND_ROW\"]\n  }'\n"
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        description: The team ID that owns both the source job and target project
+        schema:
+          type: string
+          format: uuid
+        example: f6c0b8cb-de69-495c-980b-2b0e0a6ca288
+      requestBody:
+        required: true
+        description: "Job copy configuration specifying the source job, target project, new job title, \nand which components to copy.\n"
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - copiedFrom
+              - projectId
+              - title
+              properties:
+                copiedFrom:
+                  type: string
+                  format: uuid
+                  description: ID of the source job to copy from (required)
+                  example: 63311198-5481-4312-ae33-f9fcf1423191
+                projectId:
+                  type: string
+                  format: uuid
+                  description: ID of the target project where the job will be created (required)
+                  example: fbff3f10-7105-4e52-afef-00fe21a3100e
+                title:
+                  type: string
+                  description: Title for the new job - must be unique within the target project (required)
+                  example: Copy of My Job
+                  maxLength: 255
+                appendTo:
+                  type: string
+                  description: Data source type - must be 'project_data_source'
+                  enum:
+                  - project_data_source
+                  default: project_data_source
+                  example: project_data_source
+                types:
+                  type: array
+                  description: 'Components to copy from the source job. Leave empty to copy basic structure only.
+
+                    - **DESIGN**: Copy job design/CML configuration
+
+                    - **CROWD_SETTINGS**: Copy contributor settings
+
+                    - **PRICE_AND_ROW**: Copy row settings and pricing configuration
+
+                    - **QUALITY_SETTINGS**: Copy quality/leading QA settings
+
+                    '
+                  items:
+                    type: string
+                    enum:
+                    - DESIGN
+                    - CROWD_SETTINGS
+                    - PRICE_AND_ROW
+                    - QUALITY_SETTINGS
+                  example:
+                  - DESIGN
+                  - CROWD_SETTINGS
+                  - PRICE_AND_ROW
+                  - QUALITY_SETTINGS
+            examples:
+              work_job_full_copy:
+                summary: Copy WORK job with all settings
+                value:
+                  copiedFrom: 63311198-5481-4312-ae33-f9fcf1423191
+                  projectId: fbff3f10-7105-4e52-afef-00fe21a3100e
+                  title: Copy of Work Job
+                  appendTo: project_data_source
+                  types:
+                  - DESIGN
+                  - CROWD_SETTINGS
+                  - PRICE_AND_ROW
+              qa_job_full_copy:
+                summary: Copy Leading QA job with all settings including quality settings
+                value:
+                  copiedFrom: e19bc365-aa0e-4a23-9188-a2ac11b7016d
+                  projectId: 567ac5fa-b7bf-454c-9459-4e878a5b0280
+                  title: Copy of Leading QA Job
+                  appendTo: project_data_source
+                  types:
+                  - QUALITY_SETTINGS
+                  - DESIGN
+                  - CROWD_SETTINGS
+                  - PRICE_AND_ROW
+              design_only:
+                summary: Copy design/CML only
+                value:
+                  copiedFrom: 63311198-5481-4312-ae33-f9fcf1423191
+                  projectId: fbff3f10-7105-4e52-afef-00fe21a3100e
+                  title: Job with Same Design
+                  appendTo: project_data_source
+                  types:
+                  - DESIGN
+              crowd_settings_only:
+                summary: Copy crowd/contributor settings only
+                value:
+                  copiedFrom: 63311198-5481-4312-ae33-f9fcf1423191
+                  projectId: fbff3f10-7105-4e52-afef-00fe21a3100e
+                  title: Job with Same Crowd Settings
+                  appendTo: project_data_source
+                  types:
+                  - CROWD_SETTINGS
+              row_settings_only:
+                summary: Copy row settings and pricing only
+                value:
+                  copiedFrom: 63311198-5481-4312-ae33-f9fcf1423191
+                  projectId: fbff3f10-7105-4e52-afef-00fe21a3100e
+                  title: Job with Same Row Settings
+                  appendTo: project_data_source
+                  types:
+                  - PRICE_AND_ROW
+      responses:
+        '200':
+          description: Job copied successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Job copied successfully
+                  data:
+                    $ref: '#/components/schemas/JobDTO'
+                  traceId:
+                    type: string
+                    description: Trace ID for tracking the request
+                    example: abc-123-xyz
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: '2025-10-21T07:46:52.429060Z'
+              example:
+                status: 200
+                message: Job copied successfully
+                data:
+                  id: 789d7bc2-2c7b-48ee-89f1-9e99cfcc9b3b
+                  version: 2
+                  projectId: 61ffd5af-cada-4452-a80b-57b46ded1958
+                  teamId: cf22e84f-06c8-4955-b626-1c47d245a176
+                  title: Copy of job1
+                  displayId: null
+                  cycleNumber: 0
+                  feedback: DISABLED
+                  flowId: 789d7bc2-2c7b-48ee-89f1-9e99cfcc9b3b
+                  type: QA
+                  state: DRAFT
+                  activeStatus: ACTIVE
+                  assignmentLeaseExpiry: 1200
+                  judgmentsPerRow: 1
+                  rowsPerPage: 10
+                  displayContributorName: null
+                  judgmentModifiable: false
+                  sendBackOp: NO_OP
+                  copiedFrom: 2ec45e4f-3a2d-4fd1-b3d7-ab36f6cb1e0a
+                  maxJudgmentPerContributorEnabled: false
+                  maxJudgmentPerContributor: 0
+                  maxSkippablePromptNum: 0
+                  unitSegmentType: UNIT_ONLY
+                  internalSecret: OwHv0Ohwaq3BSLHeIqsazG2kjKrE9KB1ZmLWsAK7AaiJZC
+                  jobCml: null
+                  jobFilter: null
+                  jobCrowd: null
+                  testQuestionSettings: null
+                  operateHistoryId: a75eb471-007c-464e-adb1-cf144ecca3a7
+                  payRateType: ''
+                  invoiceStatisticsType: UNIT_COUNT
+                  createdAt: '2025-10-23T06:40:58.949371Z'
+                  allowSelfQa: true
+                  allowAbandonUnits: true
+                  maxNumberOfAllowedAbandonment: 3
+                  sendAbandonedUnitsBackToJob: true
+                  instruction: ''
+                  validationRuleId: null
+                  enableBlueTooth: false
+                  launchPlatform: []
+                  latestAppVersion: false
+                  reusablePrompt: false
+                  reusablePin: false
+                  totalSessionNumber: 0
+                  firstLaunchTime: null
+                  promptsEnabling: null
+                  reviewReasons: ''
+                  reviewReasonOption: SINGLE
+                  parentJobId: null
+                  unitGroupOption: IGNORE
+                  appendable: false
+                  enableShareLink: false
+                  timeLimitThresholdSec: 30
+                  enableExternalAutoAssignJob: true
+                  dynamicJudgements:
+                    enableDynamicJudgements: false
+                    maxDynamicJudgements: 0
+                    mode: MINIMUM_CONFIDENCE
+                    minimumConfidence: 0.0
+                    enabledQuestions: '{}'
+                    id: ''
+                    version: 0
+                  enableExpirationTime: 0
+                  expirationDurationSet: 0
+                  expirationDurationUpdate: 0
+                  threshold: 0.0
+                  qaAdvancedOptions: null
+                  active: true
+                  multipleJudgment: false
+                  appenConnectCrowd: false
+                  running: false
+                  alias: Qnull
+                  draft: true
+                  segmented: false
+                traceId: dc275948571ddd43
+                timestamp: '2025-10-23T06:40:59.281366Z'
+        '400':
+          description: Bad request - Missing required fields, invalid field values, or validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missing_copied_from:
+                  summary: Missing copiedFrom field
+                  value:
+                    timestamp: '2025-10-21T07:46:52.429060Z'
+                    status: 400
+                    errorCode: 4001
+                    error: Bad Request
+                    message: copiedFrom is required
+                    path: /v3/project-flow/projects/jobs/copy-job
+                    traceId: abc-123-xyz
+                missing_project_id:
+                  summary: Missing projectId field
+                  value:
+                    timestamp: '2025-10-21T07:46:52.429060Z'
+                    status: 400
+                    errorCode: 4001
+                    error: Bad Request
+                    message: projectId is required
+                    path: /v3/project-flow/projects/jobs/copy-job
+                    traceId: abc-123-xyz
+                missing_title:
+                  summary: Missing title field
+                  value:
+                    timestamp: '2025-10-21T07:46:52.429060Z'
+                    status: 400
+                    errorCode: 4001
+                    error: Bad Request
+                    message: title is required
+                    path: /v3/project-flow/projects/jobs/copy-job
+                    traceId: abc-123-xyz
+                invalid_append_to:
+                  summary: Invalid appendTo value
+                  value:
+                    timestamp: '2025-10-21T07:46:52.429060Z'
+                    status: 400
+                    errorCode: 4002
+                    error: Bad Request
+                    message: Invalid appendTo value. Must be 'project_data_source'
+                    path: /v3/project-flow/projects/jobs/copy-job
+                    traceId: abc-123-xyz
+                invalid_types:
+                  summary: Invalid types value
+                  value:
+                    timestamp: '2025-10-21T07:46:52.429060Z'
+                    status: 400
+                    errorCode: 4002
+                    error: Bad Request
+                    message: 'Invalid type value: ''INVALID_TYPE''. Allowed values are: DESIGN, CROWD_SETTINGS, PRICE_AND_ROW, QUALITY_SETTINGS'
+                    path: /v3/project-flow/projects/jobs/copy-job
+                    traceId: abc-123-xyz
+                quality_settings_work_job:
+                  summary: QUALITY_SETTINGS not allowed for WORK jobs
+                  value:
+                    timestamp: '2025-10-21T07:46:52.429060Z'
+                    status: 400
+                    errorCode: 4002
+                    error: Bad Request
+                    message: 'QUALITY_SETTINGS can only be copied from QA/Leading QA jobs. Source job type is: WORK'
+                    path: /v3/project-flow/projects/jobs/copy-job
+                    traceId: abc-123-xyz
+                no_project_association:
+                  summary: Source job has no project association
+                  value:
+                    timestamp: '2025-10-21T07:46:52.429060Z'
+                    status: 400
+                    errorCode: 4006
+                    error: Bad Request
+                    message: Source job does not have a valid project association
+                    path: /v3/project-flow/projects/jobs/copy-job
+                    traceId: abc-123-xyz
+                cross_project_copy:
+                  summary: Cannot copy job to different project
+                  value:
+                    timestamp: '2025-10-21T07:46:52.429060Z'
+                    status: 400
+                    errorCode: 4007
+                    error: Bad Request
+                    message: 'Jobs can only be copied within the same project. Source job belongs to project: fbff3f10-7105-4e52-afef-00fe21a3100e'
+                    path: /v3/project-flow/projects/jobs/copy-job
+                    traceId: abc-123-xyz
+        '403':
+          description: Forbidden - Team does not have access to source job or target project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                source_job_forbidden:
+                  summary: Source job belongs to different team
+                  value:
+                    timestamp: '2025-10-21T07:46:52.429060Z'
+                    status: 403
+                    errorCode: 4003
+                    error: Forbidden
+                    message: Source job does not belong to the specified team
+                    path: /v3/project-flow/projects/jobs/copy-job
+                    traceId: abc-123-xyz
+                target_project_forbidden:
+                  summary: Target project belongs to different team
+                  value:
+                    timestamp: '2025-10-21T07:46:52.429060Z'
+                    status: 403
+                    errorCode: 4003
+                    error: Forbidden
+                    message: Target project does not belong to the specified team
+                    path: /v3/project-flow/projects/jobs/copy-job
+                    traceId: abc-123-xyz
+        '404':
+          description: Not found - Source job or target project does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                source_job_not_found:
+                  summary: Source job not found
+                  value:
+                    timestamp: '2025-10-21T07:46:52.429060Z'
+                    status: 404
+                    errorCode: 4004
+                    error: Not Found
+                    message: 'Source job not found: 63311198-5481-4312-ae33-f9fcf1423191'
+                    path: /v3/project-flow/projects/jobs/copy-job
+                    traceId: abc-123-xyz
+                target_project_not_found:
+                  summary: Target project not found
+                  value:
+                    timestamp: '2025-10-21T07:46:52.429060Z'
+                    status: 404
+                    errorCode: 4005
+                    error: Not Found
+                    message: 'Target project not found: fbff3f10-7105-4e52-afef-00fe21a3100e'
+                    path: /v3/project-flow/projects/jobs/copy-job
+                    traceId: abc-123-xyz
+        '409':
+          description: Conflict - Job title already exists in target project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-10-21T07:46:52.429060Z'
+                status: 409
+                errorCode: 4009
+                error: Conflict
+                message: A job with the title 'Copy of My Job' already exists in the target project
+                path: /v3/project-flow/projects/jobs/copy-job
+                traceId: abc-123-xyz
+        '422':
+          description: Unprocessable entity - Business rule violation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-10-21T07:46:52.429060Z'
+                status: 422
+                error: Unprocessable Entity
+                message: Cannot copy job due to business rule violation
+                path: /v3/project-flow/projects/jobs/copy-job
+                traceId: abc-123-xyz
+        '500':
+          description: Internal server error - Failed to copy job
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-10-21T07:46:52.429060Z'
+                status: 500
+                errorCode: 4500
+                error: Internal Server Error
+                message: 'Failed to copy job: Internal service error'
+                path: /v3/project-flow/projects/jobs/copy-job
+                traceId: abc-123-xyz
+      security:
+      - TokenAuth: []
+  /v3/project-flow/projects/jobs/status:
+    get:
+      tags:
+      - Jobs
+      summary: Get job status
+      description: 'Retrieves the current status and progress metrics for a specific job.
+
+
+        This endpoint provides comprehensive job progress information including:
+
+        - **Completion percentage**: Overall job completion progress (0-100%)
+
+        - **Unit statistics**: Total units and submitted units in the job
+
+        - **Judgment statistics**: Total and submitted judgments for the job
+
+        - **Test questions**: Total available test questions for the job
+
+
+        **Supported Job Types:**
+
+        - WORK jobs
+
+        - QA jobs'
+      operationId: getJobStatus
+      x-codeSamples:
+      - lang: curl
+        label: Get Job Status
+        source: "curl -X GET \"https://api.appen.com/v3/project-flow/projects/jobs/status?teamId=cf22e84f-06c8-4955-b626-1c47d245a176&jobId=db66f1e3-7260-45a8-b8c6-9359bbdbfd3f\" \\\n  -H \"Authorization: Token token=<your-api-key>\"\n"
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        description: The unique identifier for your team
+        schema:
+          type: string
+          format: uuid
+          example: cf22e84f-06c8-4955-b626-1c47d245a176
+      - name: jobId
+        in: query
+        required: true
+        description: The unique identifier of the job to get status for
+        schema:
+          type: string
+          format: uuid
+          example: db66f1e3-7260-45a8-b8c6-9359bbdbfd3f
+      responses:
+        '200':
+          description: Job status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - jobId
+                - jobTitle
+                - completionPercentage
+                - totalUnits
+                - submittedUnits
+                - totalJudgments
+                - submittedJudgments
+                - totalTestQuestions
+                - lastUpdated
+                - status
+                - message
+                - traceId
+                - timestamp
+                properties:
+                  jobId:
+                    type: string
+                    format: uuid
+                    description: Unique identifier of the job
+                    example: db66f1e3-7260-45a8-b8c6-9359bbdbfd3f
+                  jobTitle:
+                    type: string
+                    description: Title of the job
+                    example: work
+                  completionPercentage:
+                    type: integer
+                    minimum: 0
+                    maximum: 100
+                    description: Job completion percentage (0-100)
+                    example: 50
+                  totalUnits:
+                    type: integer
+                    format: int64
+                    minimum: 0
+                    description: Total number of units in the job
+                    example: 8
+                  submittedUnits:
+                    type: integer
+                    format: int64
+                    minimum: 0
+                    description: Number of units that have been submitted/finalized
+                    example: 4
+                  totalJudgments:
+                    type: integer
+                    format: int64
+                    minimum: 0
+                    description: Total number of judgments expected for the job
+                    example: 17
+                  submittedJudgments:
+                    type: integer
+                    format: int64
+                    minimum: 0
+                    description: Number of judgments that have been submitted (COMMITTED status)
+                    example: 8
+                  totalTestQuestions:
+                    type: integer
+                    minimum: 0
+                    description: Total number of available test questions for the job
+                    example: 3
+                  lastUpdated:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the status was last updated
+                    example: '2025-10-29T04:00:48.659850Z'
+                  status:
+                    type: integer
+                    description: HTTP status code
+                    example: 200
+                  message:
+                    type: string
+                    description: Response message
+                    example: Job status retrieved successfully
+                  traceId:
+                    type: string
+                    description: Unique trace ID for request tracking
+                    example: f05188f693ea9ad8b10c9d43e202e06f
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: Response generation timestamp
+                    example: '2025-10-29T04:00:48.662217Z'
+              examples:
+                successful_response:
+                  summary: Successful job status response
+                  value:
+                    jobId: db66f1e3-7260-45a8-b8c6-9359bbdbfd3f
+                    jobTitle: work
+                    completionPercentage: 50
+                    totalUnits: 8
+                    submittedUnits: 4
+                    totalJudgments: 17
+                    submittedJudgments: 8
+                    totalTestQuestions: 3
+                    lastUpdated: '2025-10-29T04:00:48.659850Z'
+                    status: 200
+                    message: Job status retrieved successfully
+                    traceId: f05188f693ea9ad8b10c9d43e202e06f
+                    timestamp: '2025-10-29T04:00:48.662217Z'
+        '400':
+          description: Bad request - Missing or invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missing_team_id:
+                  summary: Missing teamId parameter
+                  value:
+                    timestamp: '2025-10-29T04:00:48.662217Z'
+                    status: 400
+                    errorCode: 4001
+                    error: Bad Request
+                    message: teamId is required
+                    path: /v3/projects/jobs/status
+                    traceId: abc-123-xyz
+                missing_job_id:
+                  summary: Missing jobId parameter
+                  value:
+                    timestamp: '2025-10-29T04:00:48.662217Z'
+                    status: 400
+                    errorCode: 4001
+                    error: Bad Request
+                    message: jobId is required
+                    path: /v3/projects/jobs/status
+                    traceId: abc-123-xyz
+                no_project_association:
+                  summary: Job has no associated project
+                  value:
+                    timestamp: '2025-10-29T04:00:48.662217Z'
+                    status: 400
+                    errorCode: 4006
+                    error: Bad Request
+                    message: Job has no associated project
+                    path: /v3/projects/jobs/status
+                    traceId: abc-123-xyz
+        '403':
+          description: Forbidden - Team does not have access to the job
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                team_forbidden:
+                  summary: Team does not have access to job
+                  value:
+                    timestamp: '2025-10-29T04:00:48.662217Z'
+                    status: 403
+                    errorCode: 4003
+                    error: Forbidden
+                    message: Team does not have access to this job
+                    path: /v3/projects/jobs/status
+                    traceId: abc-123-xyz
+        '404':
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                job_not_found:
+                  summary: Job not found
+                  value:
+                    timestamp: '2025-10-29T04:00:48.662217Z'
+                    status: 404
+                    errorCode: 4004
+                    error: Not Found
+                    message: 'Job not found: db66f1e3-7260-45a8-b8c6-9359bbdbfd3f'
+                    path: /v3/projects/jobs/status
+                    traceId: abc-123-xyz
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                internal_error:
+                  summary: Internal server error
+                  value:
+                    timestamp: '2025-10-29T04:00:48.662217Z'
+                    status: 500
+                    errorCode: 4500
+                    error: Internal Server Error
+                    message: An unexpected error occurred
+                    path: /v3/projects/jobs/status
+                    traceId: abc-123-xyz
+      security:
+      - TokenAuth: []
+  /v3/jobs/update:
+    put:
+      tags:
+      - Jobs
+      summary: Update job settings
+      description: 'Updates job settings for the specified team. This endpoint allows you to modify various job properties
+
+        including basic settings, validation rules, expiration settings, and dynamic judgement configuration.
+
+
+        ## Mandatory Fields
+
+        The following fields are **mandatory** and must be provided in every update request:
+
+        - `id` - The unique job identifier
+
+        - `projectId` - Project identifier this job belongs to
+
+        - `teamId` - Team identifier that owns the job
+
+        - `title` - Job title (must be unique within the project)
+
+        - `type` - Job type (WORK or QA)
+
+
+        ## Necessary Fields
+
+        The following are important fields that must be updated in every job settings
+
+        - `assignmentLeaseExpiry` - Assignment lease in seconds
+
+        - `judgmentsPerRow` - Judgments per row
+
+        - `rowsPerPage` - Rows per page
+
+        - `enableShareLink` - Must be set to true to retrieve the job''s `internalSecret`
+
+
+        ## Optional
+
+        - Omitting a field leaves the current value unchanged
+
+        - `timeLimitThresholdSec`: 0 (disabled)
+
+        - `enableExpirationTime`: 0 (disabled)
+
+        - `expirationDurationSet`: 0 (disabled)
+
+        - `expirationDurationUpdate`: 0 (disabled)
+
+        - `dynamicJudgements.minimumConfidence`: 0.0 (disabled)
+
+        - `dynamicJudgements.maxDynamicJudgements`: 0
+
+        - Counts (e.g., maxJudgmentPerContributor, maxNumberOfAllowedAbandonment): 0 allowed (non-negative)
+
+
+        ## Validations
+
+        - Team ID: Body `teamId` must match query `teamId`
+
+        - Title: Must be unique within project (duplicate → error 60080)
+
+        - Assignment lease expiry: integer seconds, minimum 60
+
+        - Judgments per row: integer ≥ 1; Rows per page: integer ≥ 1
+
+        - Time limit threshold (`timeLimitThresholdSec`): percentage 0–100 (0 = disabled)
+
+        - Expiration: `enableExpirationTime` (0 = disabled, > 0 = enabled). When enabled, `expirationDurationSet` and
+
+        `expirationDurationUpdate` must be > 0. All expiration fields accept 0 (disabled)
+
+        - Dynamic judgements: `minimumConfidence` 0.0–1.0 (0 = disabled). Mode MINIMUM_CONFIDENCE requires
+
+        `minimumConfidence`; mode MATCHING_JUDGEMENTS requires `matchingJudgements`. Do not provide both
+
+        - Enable Share Link: boolean; when true, shareable link generation is enabled for the job
+
+        - CML (if provided in `jobCml.cml`): must contain at least one `` element; payload `/`javascript:`; attribute values must be quoted. When `dynamicJudgements.enableDynamicJudgements = true`,
+
+        at least one labeled CML question (`label` attribute) is required. When false, labels are not required. If embedding
+
+        CML in JSON, escape quotes (") and backslashes (\\)
+
+
+        ## Limitations
+
+        - Settings related to Test Questions, Management of Internal/External contributors, CSS and JS for CML design will be supported in next version of the release
+
+
+        Common errors:
+
+        - 400: Missing required fields, invalid values, or mismatched teamId.
+
+        - 60080: Job title already exists in project.
+
+        - 60000: Job not found or access denied.
+
+        - 500: Internal error (ensure required fields are present and valid).'
+      operationId: updateJob
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 50
+        description: 'Required: Team identifier that owns the job. Must match the `teamId` in the request body.
+
+          '
+        example: team-123e4567-e89b-12d3-a456-426614174000
+      x-codeSamples:
+      - lang: curl
+        label: Update Basic Job Settings
+        source: "curl --location --request PUT 'https://api.appen.com/v3/jobs/update?teamId=ceb94637-a8d4-4bbd-877c-cc260a4212aa' \\\n--header 'Authorization: Token token=<your-api-key>' \\\n--header 'Content-Type: application/json' \\\n--data '{\n    \"id\":\"5d63a9fb-e44c-449e-9778-94f32001baaa\",\n    \"version\":2,\n    \"projectId\":\"b41d5f3c-8622-4f6a-a272-c0a7a2a60d88\",\n    \"teamId\":\"ceb94637-a8d4-4bbd-877c-cc260a4212aa\",\n    \"title\":\"Updated Job sep\",\n    \"displayId\":512177,\n    \"cycleNumber\":0,\n    \"feedback\":\"DISABLED\",\n    \"flowId\":\"5d63a9fb-e44c-449e-9778-94f32001baaa\",\n    \"type\":\"WORK\",\n    \"state\":\"DRAFT\",\n    \"activeStatus\":\"ACTIVE\",\n    \"assignmentLeaseExpiry\":1800,\n    \"judgmentsPerRow\":1,\n    \"rowsPerPage\":5,\n    \"displayContributorName\":null,\n    \"judgmentModifiable\":false,\n    \"sendBackOp\":\"SEND_BACK_TO_SAME_CONTRIBUTOR\",\n    \"copiedFrom\":null,\n    \"maxJudgmentPerContributorEnabled\":false,\n    \"maxJudgmentPerContributor\":0,\n    \"maxSkippablePromptNum\":0,\n    \"unitSegmentType\":null,\n    \"internalSecret\":\"hm9S2hnizhS6qPfOeQKVYRClVYFd4Lffplddn9uQ4mqgqq\",\n    \"jobCml\": {\n        \"id\": \"a265956a-c323-41f1-8286-df2266ff1dd0\",\n        \"version\": 0,\n        \"teamId\": \"f6c0b8cb-de69-495c-980b-2b0e0a6ca288\",\n        \"jobId\": \"cf2df8d7-01ed-4ec7-9e6b-31d3c3aa669b\",\n        \"instructions\": \"<h1>Overview</h1>\\n<hr/>\\n\\n<h1>Steps</h1>\\n<hr/>\\n\\n<h1>Rules &amp; Tips</h1>\\n<hr/>\\n\\n<h1>Examples</h1>\\n<hr/>\\n\\n\",\n        \"cml\": \"<cml:select label=\\\"Sample select box:\\\" validates=\\\"required\\\" name=\\\"sample_select\\\" type=\\\"['\\\\''select'\\\\'']\\\"><cml:option label=\\\"Option 1\\\" value=\\\"option_1\\\" /><cml:option label=\\\"Option 2\\\" value=\\\"option_2\\\" /><cml:option label=\\\"Option 3\\\" value=\\\"option_3\\\" /></cml:select>\",\n        \"js\": \"\",\n        \"css\": \"\",\n        \"validators\": [\n            \"required\"\n        ],\n        \"isValid\": null,\n        \"tags\": [\n            \"image_transcription\"\n        ],\n        \"editorType\": \"CODE_EDITOR\"\n    },\n    \"jobCrowd\": {\n      \"id\":\"24d43e45-54f9-4027-a178-f3e624a60ef1\",\n      \"version\":0,\n      \"projectId\":\"b41d5f3c-8622-4f6a-a272-c0a7a2a60d88\",\n      \"jobId\":\"5d63a9fb-e44c-449e-9778-94f32001baaa\",\n      \"teamId\":\"ceb94637-a8d4-4bbd-877c-cc260a4212aa\",\n      \"crowdType\":[\"INTERNAL\"],\n      \"crowdSubType\":null,\n      \"channels\":[],\n      \"customChannels\":[],\n      \"level\":0,\n      \"languages\":[],\n      \"countryType\":\"all\",\n      \"countries\":[],\n      \"containExplicit\":false,\n      \"curatedCrowd\":false\n    },\n    \"testQuestionSettings\":null,\n    \"operateHistoryId\":\"af6eb6b7-fe79-472c-96ed-e629796b7697\",\n    \"payRateType\":\"\",\n    \"invoiceStatisticsType\":\"UNIT_COUNT\",\n    \"createdAt\":\"2025-09-01T09:39:18.663680Z\",\n    \"allowSelfQa\":false,\n    \"allowAbandonUnits\":true,\n    \"maxNumberOfAllowedAbandonment\":3,\n    \"sendAbandonedUnitsBackToJob\":true,\n    \"instruction\":\"\",\n    \"validationRuleId\":null,\n    \"enableBlueTooth\":false,\n    \"launchPlatform\":[],\n    \"latestAppVersion\":false,\n    \"reusablePrompt\":false,\n    \"reusablePin\":false,\n    \"totalSessionNumber\":1,\n    \"firstLaunchTime\":null,\n    \"promptsEnabling\":null,\n    \"reviewReasons\":\"\",\n    \"reviewReasonOption\":\"SINGLE\",\n    \"parentJobId\":null,\n    \"unitGroupOption\":\"RETAIN\",\n    \"appendable\":false,\n    \"enableShareLink\":false,\n    \"timeLimitThresholdSec\":0,\n    \"enableExternalAutoAssignJob\":true,\n    \"enableExpirationTime\":0,\n    \"expirationDurationSet\":0,\n    \"expirationDurationUpdate\":0,\n    \"threshold\":0.0,\n    \"qaAdvancedOptions\":null,\n    \"active\":true,\n    \"running\":false,\n    \"alias\":\"W512177\",\n    \"appenConnectCrowd\":false,\n    \"draft\":true,\n    \"multipleJudgment\":false,\n    \"segmented\":false\n  }'\n"
+      - lang: curl
+        label: Mandatory fields only
+        source: "curl --location --request PUT 'https://api.appen.com/v3/jobs/update?teamId=ceb94637-a8d4-4bbd-877c-cc260a4212aa' \\\n--header 'Authorization: Token token=<your-api-key>' \\\n--header 'Content-Type: application/json' \\\n--data '{\n    \"id\":\"5d63a9fb-e44c-449e-9778-94f32001baaa\",\n    \"projectId\":\"b41d5f3c-8622-4f6a-a272-c0a7a2a60d88\",\n    \"teamId\":\"ceb94637-a8d4-4bbd-877c-cc260a4212aa\",\n    \"title\":\"Updated Job sep\",\n    \"type\":\"WORK\"\n}'\n"
+      - lang: curl
+        label: Required +Mandatory fields
+        source: "curl --location --request PUT 'https://api.appen.com/v3/jobs/update?teamId=ceb94637-a8d4-4bbd-877c-cc260a4212aa' \\\n--header 'Authorization: Token token=<your-api-key>' \\\n--header 'Content-Type: application/json' \\\n--data '{\n    \"id\":\"5d63a9fb-e44c-449e-9778-94f32001baaa\",\n    \"projectId\":\"b41d5f3c-8622-4f6a-a272-c0a7a2a60d88\",\n    \"teamId\":\"ceb94637-a8d4-4bbd-877c-cc260a4212aa\",\n    \"title\":\"Updated Job sep\",\n    \"type\":\"WORK\",\n    \"assignmentLeaseExpiry\":1800,\n    \"judgmentsPerRow\":1,\n    \"rowsPerPage\":5\n}'\n"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobDTO'
+            example:
+              id: 6a4f9e1f-944e-452f-b743-74067e163ebb
+              version: 7
+              projectId: 744296ff-5286-40e4-b867-1141914fd059
+              teamId: f6c0b8cb-de69-495c-980b-2b0e0a6ca288
+              title: Updated Job Title
+              type: WORK
+              assignmentLeaseExpiry: 120
+              judgmentsPerRow: 1
+              rowsPerPage: 5
+              judgmentModifiable: false
+              sendBackOp: SEND_BACK_TO_SAME_CONTRIBUTOR
+              maxJudgmentPerContributorEnabled: false
+              maxJudgmentPerContributor: 0
+              unitSegmentType: null
+              jobCml:
+                id: 25ad1fb7-fc9e-4861-806e-7386b80f0269
+                version: 20
+                teamId: f6c0b8cb-de69-495c-980b-2b0e0a6ca288
+                jobId: 6a4f9e1f-944e-452f-b743-74067e163ebb
+                instructions: '<h1>Overview</h1><p>Main&nbsp;<img src="/v1/refs/file?valueRef=shared/rWD3rAUsfVJjG6T99QE2mw.png&amp;storageToken=" style="width: 300px;" class="fr-fic fr-dib"></p><hr><h1>Steps</h1><hr><h1>Rules &amp; Tips</h1><hr><h1>Examples</h1><hr>'
+                cml: <cml:audio_transcription source-data="{{audio_url}}" name="audio_transcription" type="['transcription']" validates="required" beta="true"/>
+                js: ''
+                css: ''
+                validators:
+                - required
+                isValid: null
+                tags:
+                - radios
+                - radio
+                editorType: CODE_EDITOR
+              allowSelfQa: false
+              allowAbandonUnits: true
+              maxNumberOfAllowedAbandonment: 3
+              sendAbandonedUnitsBackToJob: true
+              unitGroupOption: RETAIN
+              enableShareLink: false
+              timeLimitThresholdSec: 60
+              dynamicJudgements:
+                enableDynamicJudgements: false
+                maxDynamicJudgements: 1
+                mode: MINIMUM_CONFIDENCE
+                minimumConfidence: 0.5
+                enabledQuestions: '{}'
+                id: ''
+                version: 0
+              alias: W921033
+              multipleJudgments: true
+              segmented: false
+      responses:
+        '200':
+          description: Job updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Response'
+                - type: object
+              example:
+                message: success
+                code: 200
+                data:
+                  id: 5d63a9fb-e44c-449e-9778-94f32001baaa
+                  version: 12
+                  projectId: b41d5f3c-8622-4f6a-a272-c0a7a2a60d88
+                  teamId: ceb94637-a8d4-4bbd-877c-cc260a4212aa
+                  title: Updated Job sep
+                  displayId: 512177
+                  cycleNumber: 0
+                  feedback: DISABLED
+                  flowId: 5d63a9fb-e44c-449e-9778-94f32001baaa
+                  type: WORK
+                  state: DRAFT
+                  activeStatus: ACTIVE
+                  assignmentLeaseExpiry: 1800
+                  judgmentsPerRow: 1
+                  rowsPerPage: 5
+                  displayContributorName: null
+                  judgmentModifiable: false
+                  sendBackOp: SEND_BACK_TO_SAME_CONTRIBUTOR
+                  copiedFrom: null
+                  maxJudgmentPerContributorEnabled: false
+                  maxJudgmentPerContributor: 0
+                  maxSkippablePromptNum: 0
+                  unitSegmentType: null
+                  internalSecret: hm9S2hnizhS6qPfOeQKVYRClVYFd4Lffplddn9uQ4mqgqq
+                  jobCml:
+                    id: a265956a-c323-41f1-8286-df2266ff1dd0
+                    version: 9
+                    teamId: ceb94637-a8d4-4bbd-877c-cc260a4212aa
+                    jobId: 5d63a9fb-e44c-449e-9778-94f32001baaa
+                    instructions: '<h1>Overview</h1>
+
+                      <hr/>
+
+
+                      <h1>Steps</h1>
+
+                      <hr/>
+
+
+                      <h1>Rules &amp; Tips</h1>
+
+                      <hr/>
+
+
+                      <h1>Examples</h1>
+
+                      <hr/>
+
+
+                      '
+                    cml: <cml:select label="Sample select box:" validates="required" name="sample_select" type="['select']"><cml:option label="Option 1" value="option_1" /><cml:option label="Option 2" value="option_2" /><cml:option label="Option 3" value="option_3" /></cml:select>
+                    js: ''
+                    css: ''
+                    validators:
+                    - required
+                    isValid: null
+                    tags:
+                    - image_transcription
+                    editorType: CODE_EDITOR
+                  jobFilter:
+                    id: f7bbc456-0cd9-4bf2-a24a-fb98365f2548
+                    version: 0
+                    teamId: ceb94637-a8d4-4bbd-877c-cc260a4212aa
+                    projectId: b41d5f3c-8622-4f6a-a272-c0a7a2a60d88
+                    recursive: false
+                    origin: project_data_source
+                    appliedJobId: 5d63a9fb-e44c-449e-9778-94f32001baaa
+                    sampleRate: 0
+                    fixedUnitNum: 0
+                    schedulerDelay: 0
+                    schedulerUnit: HOURS
+                    filterCriteria: ''
+                    filterNum: 0
+                    segmental: false
+                    carryJudgment: null
+                    overwriteJudgment: null
+                    segmentSampleRate: 100
+                    minimumSampleUnit: 0
+                  jobCrowd:
+                    id: 24d43e45-54f9-4027-a178-f3e624a60ef1
+                    version: 0
+                    projectId: b41d5f3c-8622-4f6a-a272-c0a7a2a60d88
+                    jobId: 5d63a9fb-e44c-449e-9778-94f32001baaa
+                    teamId: ceb94637-a8d4-4bbd-877c-cc260a4212aa
+                    crowdType:
+                    - INTERNAL
+                    crowdSubType: null
+                    channels: []
+                    customChannels: []
+                    level: 0
+                    languages: []
+                    countryType: all
+                    countries: []
+                    containExplicit: false
+                    curatedCrowd: false
+                  testQuestionSettings: null
+                  operateHistoryId: af6eb6b7-fe79-472c-96ed-e629796b7697
+                  payRateType: ''
+                  invoiceStatisticsType: UNIT_COUNT
+                  createdAt: '2025-09-01T09:39:18.663680Z'
+                  allowSelfQa: false
+                  allowAbandonUnits: true
+                  maxNumberOfAllowedAbandonment: 3
+                  sendAbandonedUnitsBackToJob: true
+                  instruction: ''
+                  validationRuleId: null
+                  enableBlueTooth: false
+                  launchPlatform: []
+                  latestAppVersion: false
+                  reusablePrompt: false
+                  reusablePin: false
+                  totalSessionNumber: 1
+                  firstLaunchTime: null
+                  promptsEnabling: null
+                  reviewReasons: ''
+                  reviewReasonOption: SINGLE
+                  parentJobId: null
+                  unitGroupOption: RETAIN
+                  appendable: false
+                  enableShareLink: false
+                  timeLimitThresholdSec: 0
+                  enableExternalAutoAssignJob: true
+                  dynamicJudgements:
+                    enableDynamicJudgements: false
+                    maxDynamicJudgements: 0
+                    mode: MINIMUM_CONFIDENCE
+                    minimumConfidence: 0
+                    enabledQuestions: '{}'
+                    id: ''
+                    version: 0
+                  enableExpirationTime: 0
+                  expirationDurationSet: 0
+                  expirationDurationUpdate: 0
+                  threshold: 0
+                  qaAdvancedOptions: null
+                  active: true
+                  appenConnectCrowd: false
+                  draft: true
+                  multipleJudgment: false
+                  segmented: false
+                  running: false
+                  alias: W512177
+                traceId: d2770b57-cca5-4fc5-b19d-0785a31c5473
+                time: '2025-09-04T11:49:22.844051Z'
+  /v3/jobs/jobStatusById:
+    get:
+      tags:
+      - Jobs
+      summary: Get job settings
+      description: 'Returns the current job status and core metadata for the given `jobId`.
+
+        Intended for dashboards and polling; returns a lightweight subset of `JobDTO` (for example:
+
+        `id`, `title`, `type`, `state`, `activeStatus`, `assignmentLeaseExpiry`, `rowsPerPage`,
+
+        `judgmentsPerRow`, `displayId`, `teamId`, `createdAt`) and omits large assets/collections.'
+      operationId: getJobStatusById
+      security:
+      - TokenAuth: []
+      parameters:
+      - name: jobId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Job identifier (UUID)
+        example: 6a4f9e1f-944e-452f-b743-74067e163ebb
+      x-codeSamples:
+      - lang: curl
+        label: Get job settings
+        source: "curl -X GET \"https://api.appen.com/v3/jobs/jobStatusById?jobId=cf2df8d7-01ed-4ec7-9e6b-31d3c3aa669b\" \\\n  -H \"Authorization: Token token=<your-api-key>\"\n"
+      responses:
+        '200':
+          description: Job fetched successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Response'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/JobDTO'
+              example:
+                message: success
+                code: 200
+                data:
+                  id: 5d63a9fb-e44c-449e-9778-94f32001baaa
+                  version: 12
+                  projectId: b41d5f3c-8622-4f6a-a272-c0a7a2a60d88
+                  teamId: ceb94637-a8d4-4bbd-877c-cc260a4212aa
+                  title: Updated Job sep
+                  displayId: 512177
+                  cycleNumber: 0
+                  feedback: DISABLED
+                  flowId: 5d63a9fb-e44c-449e-9778-94f32001baaa
+                  type: WORK
+                  state: DRAFT
+                  activeStatus: ACTIVE
+                  assignmentLeaseExpiry: 1800
+                  judgmentsPerRow: 1
+                  rowsPerPage: 5
+                  displayContributorName: null
+                  judgmentModifiable: false
+                  sendBackOp: SEND_BACK_TO_SAME_CONTRIBUTOR
+                  copiedFrom: null
+                  maxJudgmentPerContributorEnabled: false
+                  maxJudgmentPerContributor: 0
+                  maxSkippablePromptNum: 0
+                  unitSegmentType: null
+                  internalSecret: hm9S2hnizhS6qPfOeQKVYRClVYFd4Lffplddn9uQ4mqgqq
+                  jobCml: null
+                  jobFilter: null
+                  jobCrowd: null
+                  testQuestionSettings: null
+                  operateHistoryId: 337d2dc1-2a14-4f67-a7e6-ced564846573
+                  payRateType: ''
+                  invoiceStatisticsType: UNIT_COUNT
+                  createdAt: '2025-09-01T09:39:18.663680Z'
+                  allowSelfQa: false
+                  allowAbandonUnits: true
+                  maxNumberOfAllowedAbandonment: 3
+                  sendAbandonedUnitsBackToJob: null
+                  instruction: ''
+                  validationRuleId: null
+                  enableBlueTooth: false
+                  launchPlatform: []
+                  latestAppVersion: false
+                  reusablePrompt: false
+                  reusablePin: false
+                  totalSessionNumber: 1
+                  firstLaunchTime: null
+                  promptsEnabling: null
+                  reviewReasons: ''
+                  reviewReasonOption: SINGLE
+                  parentJobId: null
+                  unitGroupOption: RETAIN
+                  appendable: false
+                  enableShareLink: false
+                  timeLimitThresholdSec: 0
+                  enableExternalAutoAssignJob: true
+                  dynamicJudgements:
+                    enableDynamicJudgements: false
+                    maxDynamicJudgements: 0
+                    mode: MINIMUM_CONFIDENCE
+                    minimumConfidence: 0
+                    enabledQuestions: '{}'
+                    id: ''
+                    version: 0
+                  enableExpirationTime: 0
+                  expirationDurationSet: 0
+                  expirationDurationUpdate: 0
+                  threshold: 0
+                  qaAdvancedOptions: null
+                  active: true
+                  appenConnectCrowd: false
+                  draft: true
+                  multipleJudgment: false
+                  segmented: false
+                  running: false
+                  alias: W512177
+                traceId: 527595af-c3d8-431a-8c30-3a01d6423760
+                time: '2025-09-04T11:54:33.503497Z'
+        '400':
+          description: Bad request - Missing or invalid jobId
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found - Job does not exist or inaccessible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v3/jobs/pause:
+    post:
+      tags:
+      - Jobs
+      summary: Pause job
+      description: 'Temporarily stops a running job, pausing all new contributor assignments while preserving current progress. This allows you to halt work without losing completed annotations.
+
+
+        **What Happens When You Pause:**
+
+        - Job status changes from DRAFT to PAUSED
+
+        - Contributors cannot start new assignments
+
+        - No new units are distributed to contributors
+
+        - All progress and judgments are preserved'
+      operationId: pauseJob
+      parameters:
+      - name: jobId
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Job identifier to pause
+        example: 2b9ebe3d-1ff2-461d-a0c8-66e86b239b57
+      x-codeSamples:
+      - lang: curl
+        label: Pause Job
+        source: "curl -X POST \"https://api.appen.com/v3/jobs/pause?jobId=<jobId>\" \\\n  -H \"Authorization: Token token=<your-api-key>\"\n"
+      responses:
+        '200':
+          description: Job paused successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Response'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/JobDTO'
+              example:
+                message: success
+                code: 200
+                data:
+                  id: 2b9ebe3d-1ff2-461d-a0c8-66e86b239b57
+                  state: PAUSED
+                  title: Paused Job
+                traceId: trace-123
+                time: '2025-07-09T03:19:22Z'
+        '400':
+          description: Bad request - Invalid job ID or job already paused
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalid_job_id:
+                  summary: Invalid job ID
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: Invalid job ID
+                    path: /v3/jobs/pause
+                job_already_paused:
+                  summary: Job already paused
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: Job already paused
+                    path: /v3/jobs/pause
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 403
+                error: Forbidden
+                message: Access denied. Check your privileges.
+                path: /v3/jobs/pause
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 500
+                error: Internal Server Error
+                message: Failed to pause job
+                path: /v3/jobs/pause
+      security:
+      - TokenAuth: []
+  /v3/jobs/launch:
+    post:
+      tags:
+      - Jobs
+      summary: Launch & Resume/Run job
+      description: 'Activates a previously created job, making it available for contributors to work on. This transitions the job from PAUSE to RUNNING state and begins the actual annotation process.
+
+
+        # Contributor Access URL Construction
+
+
+        With this release, customers can now generate the Contributor Access URL programmatically.
+
+
+        ### URL Structure
+
+        ```
+
+        https://account.appen.com/quality/tasks/{jobId}?secret={secret}
+
+        ```
+
+
+        ### Components
+
+        - **Base URL**: `https://account.appen.com/quality/tasks/` (constant string)
+
+        - **Job ID**: Returned in the response of the Create Job API (example: `2d215241-00bc-4453-bac3-449387a78190`)
+
+        - **Secret**: Returned in the response of the Update Job Settings API (example: `xicPrChRfj28e7GLZiDykuTDQZqpJYv6QkBRLacU5bp4eE`)
+
+
+        ### Example Construction
+
+        ```
+
+        https://account.appen.com/quality/tasks/2d215241-00bc-4453-bac3-449387a78190?secret=xicPrChRfj28e7GLZiDykuTDQZqpJYv6QkBRLacU5bp4eE
+
+        ```
+
+
+        **Limitations:**
+
+        - Jobs can be launched only in ‘Work’ mode but NOT in either ‘Quiz’ mode / ‘Quiz+Work’ mode. Test Question feature will be supported in the subsequent releases,then the Jobs can be launched in all modes.
+
+        - Management of Internal/External contributors through crowd type will be supported in the subsequent releases.'
+      operationId: launchJob
+      parameters:
+      - name: jobId
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Job identifier to launch
+        example: 46deb496-749a-41de-8af8-d4b5890aa484
+      x-codeSamples:
+      - lang: curl
+        label: Launch & Resume/Run job
+        source: "curl -X POST \"https://api.appen.com/v3/jobs/launch?jobId=<jobId>\" \\\n  -H \"Authorization: Token token=<your-api-key>\"\n"
+      responses:
+        '200':
+          description: Job launched successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Response'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/JobDTO'
+              example:
+                message: success
+                code: 200
+                data:
+                  id: 46deb496-749a-41de-8af8-d4b5890aa484
+                  state: RUNNING
+                  title: Launched Job
+                traceId: trace-123
+                time: '2025-07-09T03:19:22Z'
+        '400':
+          description: Bad request - Invalid job ID or job already running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalid_job_id:
+                  summary: Invalid job ID
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: Invalid job ID
+                    path: /v3/jobs/launch
+                job_settings_not_saved:
+                  summary: Job settings not saved
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: Job settings not saved
+                    path: /v3/jobs/launch
+                job_already_running:
+                  summary: Job already running
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: Job already running
+                    path: /v3/jobs/launch
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 403
+                error: Forbidden
+                message: Access denied. Check your privileges.
+                path: /v3/jobs/launch
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 500
+                error: Internal Server Error
+                message: Failed to launch job
+                path: /v3/jobs/launch
+      security:
+      - TokenAuth: []
+components:
+  schemas:
+    JobDTO:
+      type: object
+      description: 'Job Data Transfer Object for updating job settings.
+
+
+        ## FIELD OVERVIEW
+
+
+        ** REQUIRED (5):** `id`, `projectId`, `teamId`, `title`, `type`
+
+
+        ** CORE CONFIG:** `version`, `assignmentLeaseExpiry`, `judgmentsPerRow`, `rowsPerPage`, `displayContributorName`, `judgmentModifiable`
+
+
+        ** WORKFLOW:** `state`, `activeStatus`, `feedback`, `sendBackOp`, `unitSegmentType`, `allowSelfQa`, `allowAbandonUnits`
+
+
+        ** TIME & LIMITS:** `timeLimitThresholdSec` (0-100%), `enableExpirationTime`, `expirationDurationSet`, `expirationDurationUpdate`
+
+
+        ** QUALITY:** `dynamicJudgements` (minimumConfidence 0.0-1.0), `threshold` (0.0-1.0), `maxJudgmentPerContributor`
+
+
+        ** FEATURES:** `enableBlueTooth`, `enableShareLink`, `enableExternalAutoAssignJob`, `launchPlatform`, `latestAppVersion`
+
+
+        ** SESSION:** `totalSessionNumber`, `reusablePrompt`, `reusablePin`, `maxSkippablePromptNum`
+
+
+        ** CONTENT:** `instruction`, `jobCml`, `jobFilter`, `jobCrowd`, `testQuestionSettings`
+
+
+        ** BUSINESS:** `payRateType`, `invoiceStatisticsType`, `validationRuleId`, `qaAdvancedOptions`
+
+
+        ** METADATA:** `createdAt`, `displayId`, `flowId`, `internalSecret`, `copiedFrom` (read-only fields)
+
+
+        ## KEY RULES
+
+        - TeamId must match query parameter | Job titles must be unique in project
+
+        - Negative values not allowed for: time, expiration, confidence fields
+
+        - timeLimitThresholdSec is percentage (0-100), not seconds
+
+        - When enableExpirationTime > 0, duration fields must be > 0
+
+        - WORK jobs cannot have feedback ENABLED
+
+        '
+      required:
+      - id
+      - projectId
+      - teamId
+      - title
+      - type
+      properties:
+        id:
+          type: string
+          description: '**REQUIRED**: Unique job identifier (UUID). Identifies the job to update.'
+          example: 3f9b42ee-da0e-41a0-9dcd-5c59096cee98
+        version:
+          type: integer
+          description: '**RECOMMENDED**: Job version for optimistic locking. Prevents conflicting updates.'
+          example: 21
+        projectId:
+          type: string
+          description: '**REQUIRED**: Project identifier (UUID). Must have access to this project.'
+          example: e74c1b9d-16ff-4a29-8c4c-e3147877de1b
+        teamId:
+          type: string
+          maxLength: 50
+          description: '**REQUIRED**: Team identifier (UUID). Must match teamId query parameter.'
+          example: f6c0b8cb-de69-495c-980b-2b0e0a6ca288
+        title:
+          type: string
+          description: '**REQUIRED**: Job title. Must be unique within project (error 60080 if duplicate).'
+          example: Updated Job Title
+        displayId:
+          type: integer
+          description: '**READ-ONLY**: Auto-generated human-readable job ID. Default: auto-generated.'
+          example: 837054
+        cycleNumber:
+          type: integer
+          minimum: 0
+          description: '**OPTIONAL**: Job cycle number. Default: 0, Range: ≥0.'
+          example: 0
+        feedback:
+          type: string
+          enum:
+          - ENABLED
+          - DISABLED
+          description: '**OPTIONAL**: Contributor feedback setting. Default: DISABLED. WORK jobs cannot have ENABLED.'
+          example: DISABLED
+        flowId:
+          type: string
+          description: '**OPTIONAL**: Workflow identifier (UUID). Default: same as job ID.'
+          example: 3f9b42ee-da0e-41a0-9dcd-5c59096cee98
+        type:
+          type: string
+          enum:
+          - WORK
+          - QA
+          description: '**REQUIRED**: Job type. WORK = standard job, QA = quality assurance. WORK jobs cannot have feedback ENABLED.'
+          example: WORK
+        state:
+          type: string
+          enum:
+          - DRAFT
+          - RUNNING
+          - PAUSED
+          - COMPLETED
+          - CANCELLED
+          description: '**OPTIONAL**: Current job state. Controls job execution status.'
+          example: PAUSED
+        activeStatus:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          description: '**OPTIONAL**: Job active status. Default: ACTIVE.'
+          example: ACTIVE
+        assignmentLeaseExpiry:
+          type: integer
+          minimum: 60
+          description: '**RECOMMENDED**: Assignment lease time in seconds. Min: 60, controls how long assignments are held.'
+          example: 1800
+        judgmentsPerRow:
+          type: integer
+          minimum: 1
+          description: '**RECOMMENDED**: Judgments required per row. Default: 1, Min: 1. Higher = more consensus.'
+          example: 13
+        rowsPerPage:
+          type: integer
+          minimum: 1
+          description: '**RECOMMENDED**: Rows per assignment page. Min: 1, controls assignment size.'
+          example: 12
+        displayContributorName:
+          type: boolean
+          description: '**OPTIONAL**: Show contributor names. Default: false (anonymous).'
+          example: true
+        judgmentModifiable:
+          type: boolean
+          description: '**OPTIONAL**: Allow judgment editing after submission. Default: false.'
+          example: true
+        sendBackOp:
+          type: string
+          enum:
+          - SEND_BACK_TO_SAME_CONTRIBUTOR
+          - SEND_BACK_TO_ANY_CONTRIBUTOR
+          - SEND_BACK_TO_POOL
+          - IGNORE
+          description: '**OPTIONAL**: Rejected work handling. Default: SEND_BACK_TO_SAME_CONTRIBUTOR.'
+          example: SEND_BACK_TO_POOL
+        copiedFrom:
+          type:
+          - string
+          - 'null'
+          description: '**READ-ONLY**: ID of job this was copied from (if applicable).
+
+
+            - **Default**: null
+
+            - **Purpose**: Track job lineage for copied jobs
+
+            - **Note**: Set automatically when copying jobs
+
+            '
+          example: null
+        maxJudgmentPerContributorEnabled:
+          type: boolean
+          description: '**OPTIONAL**: Whether to limit judgments per contributor.
+
+
+            - **Default**: false
+
+            - **Purpose**: Enable contributor workload limits
+
+            - **Related**: Works with maxJudgmentPerContributor field
+
+            '
+          example: true
+        maxJudgmentPerContributor:
+          type: integer
+          minimum: 0
+          description: '**OPTIONAL**: Maximum judgments per contributor.
+
+
+            - **Default**: 0 (unlimited)
+
+            - **Range**: ≥ 0 (0 = unlimited, positive values set limit)
+
+            - **Purpose**: Prevent single contributor from dominating job
+
+            - **Requirement**: Only applies when maxJudgmentPerContributorEnabled = true
+
+            '
+          example: 0
+        maxSkippablePromptNum:
+          type: integer
+          minimum: 0
+          description: '**OPTIONAL**: Maximum number of skippable prompts.
+
+
+            - **Default**: 0 (no skipping allowed)
+
+            - **Range**: ≥ 0 (0 = no skipping, positive values allow skipping)
+
+            - **Purpose**: Allow contributors to skip difficult assignments
+
+            '
+          example: 0
+        unitSegmentType:
+          type: string
+          enum:
+          - UNIT_ONLY
+          - UNIT_SEGMENT
+          - UNIT_WITH_PREVIEW
+          description: "**OPTIONAL**: Unit segment type for data presentation.\n\n- **Default**: UNIT_ONLY\n- **Values**:\n  - UNIT_ONLY: Present data as single units\n  - UNIT_SEGMENT: Present data in segments\n  - UNIT_WITH_PREVIEW: Include preview capability\n- **Purpose**: Controls how data is structured for contributors\n"
+          example: UNIT_ONLY
+        internalSecret:
+          type: string
+          description: '**SYSTEM**: Internal secret for job access (auto-generated).
+
+
+            - **Default**: Auto-generated secure string
+
+            - **Purpose**: Internal authentication token
+
+            - **Note**: Do not modify unless specifically required
+
+            '
+          example: V1TeRYacyzXeb0hzQzMLzM6iQGBm5dgkMYg7wpF1PJyCfi
+        createdAt:
+          type: string
+          format: date-time
+          description: Job creation timestamp
+          example: '2025-06-17T09:23:27.639930Z'
+        allowSelfQa:
+          type: boolean
+          description: Whether self QA is allowed
+          example: false
+        allowAbandonUnits:
+          type: boolean
+          description: Whether units can be abandoned
+          example: true
+        maxNumberOfAllowedAbandonment:
+          type: integer
+          minimum: 0
+          description: Maximum number of allowed abandonments (must be non-negative)
+          example: 3
+        sendAbandonedUnitsBackToJob:
+          type: boolean
+          description: Whether abandoned units are sent back to job
+          example: true
+        instruction:
+          type: string
+          description: Job instructions
+          example: Updated instructions
+        validationRuleId:
+          type:
+          - string
+          - 'null'
+          description: Validation rule identifier
+          example: null
+        enableBlueTooth:
+          type: boolean
+          description: Whether Bluetooth is enabled
+          example: false
+        launchPlatform:
+          type: array
+          items:
+            type: string
+          description: Launch platforms
+          example: []
+        latestAppVersion:
+          type: boolean
+          description: Whether latest app version is required
+          example: false
+        reusablePrompt:
+          type: boolean
+          description: Whether prompts are reusable
+          example: false
+        reusablePin:
+          type: boolean
+          description: Whether pins are reusable
+          example: false
+        totalSessionNumber:
+          type: integer
+          minimum: 0
+          description: Total number of sessions (0 = no limit, positive values set session limit)
+          example: 0
+        firstLaunchTime:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: First launch timestamp
+          example: null
+        promptsEnabling:
+          type:
+          - string
+          - 'null'
+          description: Prompts enabling configuration
+          example: null
+        reviewReasons:
+          type: string
+          description: Review reasons
+          example: ''
+        reviewReasonOption:
+          type: string
+          description: Review reason option
+          example: SINGLE
+        parentJobId:
+          type:
+          - string
+          - 'null'
+          description: Parent job identifier
+          example: null
+        unitGroupOption:
+          type: string
+          description: Unit group option
+          example: RETAIN
+        appendable:
+          type: boolean
+          description: '**OPTIONAL**: Allow job data appending. Default: false.'
+          example: false
+        enableShareLink:
+          type: boolean
+          description: '**OPTIONAL**: Enable job sharing links. Default: false.'
+          example: true
+        payRateType:
+          type: string
+          description: '**OPTIONAL**: Payment rate type. Default: empty string.'
+          example: ''
+        invoiceStatisticsType:
+          type: string
+          enum:
+          - UNIT_COUNT
+          - JUDGMENT_COUNT
+          - TIME_BASED
+          description: '**OPTIONAL**: Invoice statistics calculation type. Default: UNIT_COUNT.'
+          example: UNIT_COUNT
+        operateHistoryId:
+          type: string
+          description: '**SYSTEM**: Operation history identifier (auto-generated).'
+          example: 400681a4-d27e-485d-9491-ae9fadec9cd8
+        jobCml:
+          type:
+          - object
+          - 'null'
+          description: '**OPTIONAL**: Job CML (Contributor Markup Language) configuration.'
+          example: null
+        jobFilter:
+          type:
+          - object
+          - 'null'
+          description: '**OPTIONAL**: Job data filtering configuration.'
+          example: null
+        jobCrowd:
+          type:
+          - object
+          - 'null'
+          description: '**OPTIONAL**: Job crowd/contributor settings.'
+          example: null
+        testQuestionSettings:
+          type:
+          - object
+          - 'null'
+          description: '**OPTIONAL**: Test question configuration. jobId and teamId must match main job.'
+          example: null
+        timeLimitThresholdSec:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: '**OPTIONAL**: Time limit threshold as percentage (0-100), not seconds. Default: 0 (disabled).'
+          example: 80
+        enableExternalAutoAssignJob:
+          type: boolean
+          description: '**OPTIONAL**: Enable external auto assignment. Default: false.'
+          example: false
+        enableExpirationTime:
+          type: integer
+          minimum: 0
+          description: '**OPTIONAL**: Expiration control. Default: 0 (disabled). When >0, duration fields must be >0.'
+          example: 0
+        expirationDurationSet:
+          type: integer
+          minimum: 0
+          description: '**OPTIONAL**: Assignment expiration duration (seconds). Default: 0 (disabled), Range: ≥0.'
+          example: 0
+        expirationDurationUpdate:
+          type: integer
+          minimum: 0
+          description: '**OPTIONAL**: Update expiration duration (seconds). Default: 0 (disabled), Range: ≥0.'
+          example: 0
+        threshold:
+          type: number
+          format: float
+          minimum: 0
+          description: '**OPTIONAL**: Job threshold value. Default: 0.0, Range: 0.0-1.0.'
+          example: 0.0
+        qaAdvancedOptions:
+          type:
+          - object
+          - 'null'
+          description: '**OPTIONAL**: QA advanced configuration options. Default: null.'
+          example: null
+        active:
+          type: boolean
+          description: '**READ-ONLY**: Whether job is active (computed field).'
+          example: true
+        alias:
+          type: string
+          description: '**READ-ONLY**: Job alias (auto-generated like W837054 or Q837054).'
+          example: Q0
+        running:
+          type: boolean
+          description: '**READ-ONLY**: Whether job is currently running (computed field).'
+          example: false
+        draft:
+          type: boolean
+          description: '**READ-ONLY**: Whether job is in draft state (computed field).'
+          example: false
+        segmented:
+          type: boolean
+          description: '**READ-ONLY**: Whether job uses segmentation (computed field).'
+          example: false
+        appenConnectCrowd:
+          type: boolean
+          description: '**READ-ONLY**: Whether using Appen Connect crowd (computed field).'
+          example: false
+        multipleJudgement:
+          type: boolean
+          description: '**READ-ONLY**: Whether multiple judgments enabled (computed from judgmentsPerRow > 1).'
+          example: true
+        dynamicJudgements:
+          type:
+          - object
+          - 'null'
+          description: '**OPTIONAL**: Dynamic judgments configuration. Default: disabled.'
+          properties:
+            enableDynamicJudgements:
+              type: boolean
+              description: 'Enable dynamic judgment adjustment. Default: false.'
+              example: false
+            maxDynamicJudgements:
+              type: integer
+              minimum: 1
+              maximum: 10000
+              description: 'Max dynamic judgments allowed. Range: 1-10000.'
+              example: 10
+            mode:
+              type: string
+              enum:
+              - MINIMUM_CONFIDENCE
+              - MATCHING_JUDGEMENTS
+              description: 'Dynamic judgment mode. Default: MINIMUM_CONFIDENCE.'
+              example: MINIMUM_CONFIDENCE
+            minimumConfidence:
+              type:
+              - number
+              - 'null'
+              format: float
+              minimum: 0
+              maximum: 1.0
+              description: 'Confidence threshold. Default: 0.0 (disabled), Range: 0.0-1.0.'
+              example: 0.0
+            matchingJudgements:
+              type:
+              - integer
+              - 'null'
+              minimum: 1
+              description: 'Required matching judgments. Min: 1 when used.'
+              example: 3
+            enabledQuestions:
+              type: string
+              description: JSON string of enabled questions configuration.
+              example: '{"question1": true}'
+            id:
+              type: string
+              description: Dynamic judgments configuration ID.
+              example: ''
+            version:
+              type: integer
+              description: Dynamic judgments configuration version.
+              example: 0
+    Response:
+      type: object
+      required:
+      - message
+      - code
+      - data
+      - time
+      properties:
+        message:
+          type: string
+          description: Response message
+          example: success
+        code:
+          type: integer
+          description: HTTP status code
+          example: 200
+        data:
+          description: Response data (type varies by endpoint)
+        traceId:
+          type:
+          - string
+          - 'null'
+          description: Request trace identifier for debugging
+          example: null
+        time:
+          type: string
+          format: date-time
+          description: Response timestamp
+          example: '2025-07-02T10:02:04.813876Z'
+    Error:
+      type: object
+      required:
+      - timestamp
+      - status
+      - error
+      - message
+      - path
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the error occurred
+        status:
+          type: integer
+          description: HTTP status code
+        error:
+          type: string
+          description: HTTP status text
+        message:
+          type: string
+          description: Human-readable error message
+        path:
+          type: string
+          description: API endpoint path that generated the error
+        trace:
+          type: string
+          description: Stack trace (only in development)
+      example:
+        timestamp: '2025-07-01T10:28:59.893+00:00'
+        status: 500
+        error: Internal Server Error
+        message: Failed to update job
+        path: /publicapi/work-service/jobs
+  securitySchemes:
+    TokenAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+      description: 'API Token authentication. Pass your API token in the Authorization header:
+
+        `Authorization: Token token=your-api-token-here`
+
+        '

@@ -1,0 +1,2478 @@
+openapi: 3.2.0
+info:
+  title: Appen AI Data Annotation Platform (ADAP) Internal…
+  description: '# Introduction
+
+
+    The Appen AI Data Annotation Platform (ADAP) APIs offer a structured, automated approach to ensure high-quality data labeling on a scale.'
+servers:
+- url: https://api.appen.com/
+  description: Production environment
+security:
+- TokenAuth: []
+tags:
+- name: Internal Contributors
+paths:
+  /v3/project-flow/projects/internalcontributor/add-contributor:
+    post:
+      tags:
+      - Internal Contributors
+      summary: Add contributor to a team
+      description: 'Add a new internal contributor to the team''s project resources. This creates a new contributor record that can
+
+        be assigned to jobs and organized into contributor groups.
+
+
+        **Features:**
+
+        - Creates a new contributor with email and name
+
+        - Validates email format and uniqueness within the team
+
+        - Contributor becomes available for job assignments immediately
+
+        - Contributors can be added to groups after creation
+
+
+        **Note:**
+
+        - Email addresses must be unique.
+
+        - Contributor names are limited to 255 characters'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - email
+              - name
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Contributor's email address
+                name:
+                  type: string
+                  maxLength: 255
+                  description: Contributor's name
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: The team identifier
+      x-codeSamples:
+      - lang: curl
+        label: Add contributor cURL
+        source: "curl -X POST 'https://api.appen.com/v3/project-flow/projects/internalcontributor/add-contributor?teamId=cf22e84f-06c8-4955-b626-1c47d245a176' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"email\": \"abcd1234@gmail.com\",\n  \"name\": \"abcd1234\"\n}'\n"
+      responses:
+        '200':
+          description: Successfully added contributor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  traceId:
+                    type: string
+                    example: 5786b0f0ca4f8f08cbeb3a9cf8ef822d
+                  code:
+                    type: integer
+                    example: 200
+                  success:
+                    type: boolean
+                    example: true
+                  teamId:
+                    type: string
+                    example: cf22e84f-06c8-4955-b626-1c47d245a176
+                  name:
+                    type: string
+                    example: abcd1234www
+                  time:
+                    type: string
+                    example: '2025-09-25T07:37:25.374620Z'
+                  message:
+                    type: string
+                    example: Contributor successfully added to team's project resources
+                  email:
+                    type: string
+                    example: abcd123neww4@gmail.com
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  errorCode:
+                    type: integer
+                    example: 2017
+                  message:
+                    type: string
+                    example: 'name: name cannot be empty; name: name cannot be null; '
+                  traceId:
+                    type: string
+                    example: 04bbcf093cf518e8ac54e654bdecdd95
+                  timestamp:
+                    type: string
+                    example: '2025-09-25T07:40:26.691296Z'
+        '403':
+          description: Access Denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                    example: /publicapi/project-flow/projects/internalcontributor/add-contributor
+                  code:
+                    type: integer
+                    example: 9000
+                  method:
+                    type: string
+                    example: POST
+                  time:
+                    type: string
+                    example: '2025-09-25T06:45:35.694878Z'
+                  message:
+                    type: string
+                    example: Access Denied
+                  status:
+                    type: integer
+                    example: 203
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    example: '2025-07-01T10:28:59.893+00:00'
+                  status:
+                    type: integer
+                    example: 500
+                  error:
+                    type: string
+                    example: Internal Server Error
+                  message:
+                    type: string
+                    example: Failed to add contributor
+                  path:
+                    type: string
+                    example: /v3/project-flow/projects/internalcontributor/add-contributor
+      security:
+      - TokenAuth: []
+      operationId: postV3ProjectFlowProjectsInternalcontributorAddContributor
+      x-operation-id-source: derived
+  /v3/project-flow/projects/contributor/internalcontributor/upload:
+    post:
+      tags:
+      - Internal Contributors
+      summary: Upload internal contributors to a team
+      description: 'Upload a CSV file containing email and name to be added as internal contributors in a team.
+
+
+        **Features:**
+
+        - Bulk upload of internal contributors via CSV file
+
+        - Automatic validation of email addresses and names
+
+
+        **CSV File Format:**
+
+        - Required columns: `email`, `name`
+
+        - Supported formats: CSV
+
+        - **Column Order**: The CSV column headers must be `email` and `name` with the same order, otherwise the request will be rejected
+
+
+        **Sample CSV File**:
+
+
+        Download the sample CSV file: sample-contributors.csv
+
+
+        **Sample CSV Content:**
+
+        ```csv
+
+        email,name
+
+        john.doe@example.com,John Doe
+
+        jane.smith@example.com,Jane Smith
+
+        mike.wilson@example.com,Mike Wilson
+
+        sarah.jones@example.com,Sarah Jones
+
+        ```
+
+
+        **Important Notes:**
+
+        - All email addresses must be unique within the team
+
+        - Invalid email formats will be rejected
+
+        - Empty or null names will be rejected'
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: The team identifier
+      - name: fileName
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Name of the CSV file being uploaded
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              description: The CSV file content
+      responses:
+        '201':
+          description: Internal contributors file uploaded and processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  traceId:
+                    type: string
+                    example: 245de84ce0060f15b05f16bcb95a28fa
+                  code:
+                    type: integer
+                    example: 201
+                  data:
+                    type: object
+                    properties:
+                      contributors:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: f69e82b4-d38d-4b0f-9065-8d0f6658a373
+                            name:
+                              type: string
+                              example: selena
+                            emailAddress:
+                              type: string
+                              example: selena@gmail.com
+                            status:
+                              type: string
+                              example: VALID
+                      status:
+                        type: string
+                        example: PUBLISHED
+                      fileId:
+                        type: string
+                        example: f4169529-3926-48c2-ad8c-463669898783
+                  teamId:
+                    type: string
+                    example: cf22e84f-06c8-4955-b626-1c47d245a176
+                  time:
+                    type: string
+                    example: '2025-09-25T08:47:21.485209Z'
+                  message:
+                    type: string
+                    example: Internal contributors file uploaded and processed successfully
+                  fileId:
+                    type: string
+                    example: f4169529-3926-48c2-ad8c-463669898783
+                  status:
+                    type: string
+                    example: SUCCESS
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  errorCode:
+                    type: integer
+                    description: Specific error code
+                    examples:
+                    - 4001
+                    - 4002
+                    - 4003
+                  message:
+                    type: string
+                    description: Error message
+                    examples:
+                    - File content is required
+                    - File name is required
+                    - 'Invalid teamId format: invalid-team-id'
+                  traceId:
+                    type: string
+                    description: Unique trace identifier
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: Error timestamp
+                example:
+                  status: 400
+                  errorCode: 4001
+                  message: File content is required
+                  traceId: e05fefcb6c257ea2
+                  timestamp: '2025-09-18T10:30:01.639011Z'
+        '403':
+          description: Access Denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                    example: /publicapi/project-flow/projects/contributor/internalcontributor/upload
+                  code:
+                    type: integer
+                    example: 9000
+                  method:
+                    type: string
+                    example: POST
+                  time:
+                    type: string
+                    example: '2025-09-25T06:45:35.694878Z'
+                  message:
+                    type: string
+                    example: Access Denied
+                  status:
+                    type: integer
+                    example: 203
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  errorCode:
+                    type: integer
+                    description: Specific error code
+                    examples:
+                    - 4501
+                    - 4502
+                    - 4503
+                    - 4504
+                    - 4505
+                    - 4506
+                    - 4507
+                    - 4508
+                  message:
+                    type: string
+                    description: Error message
+                    examples:
+                    - 'Failed to get upload URL: Service unavailable'
+                    - 'Failed to upload file to S3: Connection timeout'
+                    - 'Failed to create batch job: Invalid input parameters'
+                    - 'Failed to activate batch job: Job not found'
+                    - 'File uploaded successfully but processing failed: Unexpected error'
+                    - 'Internal server error: Database connection failed'
+                    - 'File processing failed (Status: FAILED). Please check the file format and try again.'
+                    - 'File processing failed (Status: PROCESSING). Please check the file format and try again.'
+                    - 'Failed to get final file status: Service unavailable'
+                  traceId:
+                    type: string
+                    description: Unique trace identifier
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: Error timestamp
+                  path:
+                    type: string
+                    example: /v3/project-flow/projects/contributor/internalcontributor/upload
+                example:
+                  status: 500
+                  errorCode: 4507
+                  message: 'File processing failed (Status: FAILED). Please check the file format and try again.'
+                  traceId: e05fefcb6c257ea2
+                  timestamp: '2025-09-18T10:30:01.639011Z'
+                  path: /v3/project-flow/projects/contributor/internalcontributor/upload
+      x-codeSamples:
+      - lang: curl
+        label: Upload contributors cURL
+        source: 'curl -X POST ''https://api.appen.com/v3/project-flow/projects/contributor/internalcontributor/upload?teamId=cf22e84f-06c8-4955-b626-1c47d245a176&fileName=contributors.csv'' \
+
+          -H ''Content-Type: application/octet-stream'' \
+
+          -H ''Authorization: Token token=<your-api-key>'' \
+
+          -T "@/path/to/your/file.csv"
+
+          '
+      security:
+      - TokenAuth: []
+      operationId: postV3ProjectFlowProjectsContributorInternalcontributorUpload
+      x-operation-id-source: derived
+  /v3/project-flow/projects/internalcontributor/edit-contributor:
+    put:
+      tags:
+      - Internal Contributors
+      summary: Update contributor details
+      description: 'Edit a contributor''s information like email and name. This allows updating contributor
+
+        details while maintaining their existing job assignments and group memberships.
+
+
+        **Features:**
+
+        - Update contributor email address and/or name
+
+        - Validates email format and uniqueness
+
+        - Preserves existing job assignments and group memberships
+
+
+        **Note:** At least one of `newEmail`, `newName` must be provided. The email must be already added as a contributor in the team.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - email
+              - name
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Current email address
+                name:
+                  type: string
+                  maxLength: 255
+                  description: Current name
+                newEmail:
+                  type: string
+                  format: email
+                  maxLength: 255
+                  description: New email address (optional)
+                newName:
+                  type: string
+                  maxLength: 255
+                  description: New name (optional)
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: The team identifier
+      x-codeSamples:
+      - lang: curl
+        label: Edit contributor's name cURL
+        source: "curl -X PUT 'https://api.appen.com/v3/project-flow/projects/internalcontributor/edit-contributor?teamId=cf22e84f-06c8-4955-b626-1c47d245a176' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"email\": \"hrithik@gmail.com\",\n  \"name\": \"hrithik\",\n  \"newName\": \"sharukh\"\n}'\n"
+      - lang: curl
+        label: Edit contributor's email cURL
+        source: "curl -X PUT 'https://api.appen.com/v3/project-flow/projects/internalcontributor/edit-contributor?teamId=cf22e84f-06c8-4955-b626-1c47d245a176' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"email\": \"hrithik@gmail.com\",\n  \"name\": \"hrithik\",\n  \"newEmail\": \"shahrukh@gmail.com\"\n}'\n"
+      responses:
+        '200':
+          description: Successfully edited contributor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  traceId:
+                    type: string
+                    example: 81c5b306cd3e5997cc7f258a78f0b479
+                  code:
+                    type: integer
+                    example: 200
+                  newName:
+                    type: string
+                    example: abcdefg
+                  success:
+                    type: boolean
+                    example: true
+                  teamId:
+                    type: string
+                    example: cf22e84f-06c8-4955-b626-1c47d245a176
+                  name:
+                    type: string
+                    example: gefabcd
+                  newEmail:
+                    type:
+                    - string
+                    - 'null'
+                    example: null
+                  time:
+                    type: string
+                    example: '2025-09-25T07:51:02.171149Z'
+                  message:
+                    type: string
+                    example: Contributor successfully edited
+                  email:
+                    type: string
+                    example: abcd+gef@gmail.com
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  errorCode:
+                    type: integer
+                    example: 4019
+                  message:
+                    type: string
+                    example: Contributor not found with the provided email in this team
+                  traceId:
+                    type: string
+                    example: 4cbc02595a8ff190624b393ee594cfcf
+                  timestamp:
+                    type: string
+                    example: '2025-09-25T07:47:45.765743Z'
+        '403':
+          description: Access Denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                    example: /publicapi/project-flow/projects/internalcontributor/edit-contributor
+                  code:
+                    type: integer
+                    example: 9000
+                  method:
+                    type: string
+                    example: PUT
+                  time:
+                    type: string
+                    example: '2025-09-25T06:45:35.694878Z'
+                  message:
+                    type: string
+                    example: Access Denied
+                  status:
+                    type: integer
+                    example: 203
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    example: '2025-07-01T10:28:59.893+00:00'
+                  status:
+                    type: integer
+                    example: 500
+                  error:
+                    type: string
+                    example: Internal Server Error
+                  message:
+                    type: string
+                    example: Failed to edit contributor
+                  path:
+                    type: string
+                    example: /v3/project-flow/projects/internalcontributor/edit-contributor
+      security:
+      - TokenAuth: []
+      operationId: putV3ProjectFlowProjectsInternalcontributorEditContributor
+      x-operation-id-source: derived
+  /v3/project-flow/projects/internalcontributor/list:
+    post:
+      tags:
+      - Internal Contributors
+      summary: List internal contributors
+      description: 'Retrieve a paginated list of internal contributors in a specific team or in a job or in a group with optional filtering.
+
+        Supports search functionality and custom sorting by id, name, emailAddress.
+
+
+        **Requirements:**
+
+        - teamId is mandatory
+
+        - jobId and groupId are optional filters for specific contexts
+
+
+        **Features:**
+
+        - Pagination support with configurable page size (1-100)
+
+        - Search by contributor name or email or contributor id using queryString
+
+        - Sort by name or emailAddress/id/name in ascending/descending order
+
+        - List Internal Contributors by specific job ID or contributor group ID
+
+        - Returns contributor details including ID, name, email, and group associations and status.'
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: The team identifier (mandatory)
+        example: cf22e84f-06c8-4955-b626-1c47d245a176
+      - name: jobId
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by specific job ID (optional)
+        example: 66182bdc-c411-4eac-893c-3aaf0e5cd09a
+      - name: groupId
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by specific contributor group ID (optional)
+        example: aa6ce6ca-1c55-4941-ab2c-aba2e422de02
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNumber:
+                  type: integer
+                  minimum: 1
+                  default: 1
+                pageSize:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  default: 10
+                queryString:
+                  type: string
+                  description: Search query for filtering contributors
+                sortModel:
+                  type: array
+                  items:
+                    type: object
+      x-codeSamples:
+      - lang: curl
+        label: List internal contributors in a specific Team cURL
+        source: "curl -X POST 'https://api.appen.com/v3/project-flow/projects/internalcontributor/list?teamId=cf22e84f-06c8-4955-b626-1c47d245a176' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"pageNumber\": 1,\n  \"pageSize\": 10,\n  \"queryString\": \"\",\n  \"sortModel\": []\n}'\n"
+      - lang: curl
+        label: List contributors in a specific team with search and sorting cURL
+        source: "curl -X POST 'https://api.appen.com/v3/project-flow/projects/internalcontributor/list?teamId=cf22e84f-06c8-4955-b626-1c47d245a176' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"pageNumber\": 1,\n  \"pageSize\": 20,\n  \"queryString\": \"john\",\n  \"sortModel\": [\n    {\n      \"colId\": \"name\",\n      \"sort\": \"asc\"\n    }\n  ]\n}'\n"
+      - lang: curl
+        label: List contributors in a specific job
+        source: "curl -X POST 'https://api.appen.com/v3/project-flow/projects/internalcontributor/list?teamId=cf22e84f-06c8-4955-b626-1c47d245a176&jobId=<jobId>' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"pageNumber\": 1,\n  \"pageSize\": 50,\n  \"queryString\": \"\",\n  \"sortModel\": [\n  ]\n}'\n"
+      - lang: curl
+        label: List contributors in a particular group
+        source: "curl -X POST 'https://api.appen.com/v3/project-flow/projects/internalcontributor/list?teamId=cf22e84f-06c8-4955-b626-1c47d245a176&groupId=group-abc-123' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"pageNumber\": 1,\n  \"pageSize\": 25,\n  \"queryString\": \"\",\n  \"sortModel\": [\n  ]\n}'\n"
+      responses:
+        '200':
+          description: Successfully retrieved internal contributors list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: success
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      list:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: fadbcef1-a438-4052-8b66-922981f8c9b3
+                            name:
+                              type: string
+                              example: gefabcd
+                            emailAddress:
+                              type: string
+                              example: abcd+gef@gmail.com
+                            status:
+                              type: string
+                              example: ACTIVE
+                            groups:
+                              type: array
+                              items:
+                                type: string
+                              example: []
+                      pageSize:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 4
+                      pageNumber:
+                        type: integer
+                        example: 1
+                      totalElements:
+                        type: integer
+                        example: 37
+                  traceId:
+                    type: string
+                    example: 85ec672a-dc0b-45de-b640-2500988f1bf2
+                  time:
+                    type: string
+                    example: '2025-09-25T05:23:38.880099Z'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  errorCode:
+                    type: integer
+                    example: 2017
+                  message:
+                    type: string
+                    example: 'pageSize: pageSize cannot be empty; '
+                  traceId:
+                    type: string
+                    example: 826ccb48863326eb8050903157a3cac8
+                  timestamp:
+                    type: string
+                    example: '2025-09-25T05:34:29.322513Z'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    example: '2025-07-01T10:28:59.893+00:00'
+                  status:
+                    type: integer
+                    example: 203
+                  error:
+                    type: string
+                    example: Forbidden
+                  message:
+                    type: string
+                    example: Access denied. Check your privileges.
+                  path:
+                    type: string
+                    example: /v3/project-flow/projects/internalcontributor/list
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  error:
+                    type: string
+                    example: Not Found
+                  message:
+                    type: string
+                    example: TeamId not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 500
+                  error:
+                    type: string
+                    example: Internal Server Error
+                  message:
+                    type: string
+                    example: An unexpected error occurred while processing the request
+                  path:
+                    type: string
+                    example: /v3/project-flow/projects/internalcontributor/list
+      security:
+      - TokenAuth: []
+      operationId: postV3ProjectFlowProjectsInternalcontributorList
+      x-operation-id-source: derived
+  /v3/project-flow/projects/internalcontributor/create-contributor-group:
+    post:
+      tags:
+      - Internal Contributors
+      summary: Create a new contributor group
+      description: 'Create a new contributor group with specified contributors in a team. This API allows you to organize internal contributors
+
+        into logical groups for easier management and assignment to jobs.
+
+
+        **Features:**
+
+        - Create groups with custom names and descriptions
+
+        - Add multiple contributors to the group during creation
+
+        - Automatic validation of contributor IDs against existing internal contributors
+
+        - Group name uniqueness validation within the team
+
+        - Support for bulk contributor assignment
+
+
+        **Important Notes:**
+
+        - All contributor IDs must exist as internal contributors in the specified team
+
+
+        **Limitations**
+
+        - Assigning a contributor group to a job will be released in the next version.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              - contributorIds
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                  description: Name of the contributor group (e.g., "Quality Assurance Team", "Data Annotation Specialists")
+                  example: Quality Assurance Team
+                description:
+                  type: string
+                  maxLength: 1000
+                  description: Optional description of the contributor group (e.g., "Team responsible for quality control and validation")
+                  example: Team responsible for quality control and validation
+                contributorIds:
+                  type: array
+                  items:
+                    type: string
+                  description: List of contributor IDs to add to the group (e.g., ["09364167-73d5-4836-8d40-7580cfc3f8e2", "8a2d267e-7629-4dc3-a5ef-a7dd8604338e"])
+                  example:
+                  - 09364167-73d5-4836-8d40-7580cfc3f8e2
+                  - 8a2d267e-7629-4dc3-a5ef-a7dd8604338e
+            example:
+              name: Quality Assurance Team
+              description: Team responsible for quality control and validation
+              contributorIds:
+              - 09364167-73d5-4836-8d40-7580cfc3f8e2
+              - 8a2d267e-7629-4dc3-a5ef-a7dd8604338e
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: The team identifier (e.g., "cf22e84f-06c8-4955-b626-1c47d245a176")
+        example: cf22e84f-06c8-4955-b626-1c47d245a176
+      x-codeSamples:
+      - lang: curl
+        label: Create contributor group cURL
+        source: "curl -X POST 'https://api.appen.com/v3/project-flow/projects/internalcontributor/create-contributor-group?teamId=cf22e84f-06c8-4955-b626-1c47d245a176' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"name\": \"contributor-group-name\",\n  \"description\": \"Optional group description\",\n  \"contributorIds\": [\n    \"0c7ffce5-d669-4fe3-b1e7-be7ed0ecbcff\",\n    \"2275c2aa-1750-4873-8de1-7d67a95e157d\",\n    \"2b16b2ba-f9a6-470c-aa85-f2266a4ea05b\"\n  ]\n}'\n"
+      responses:
+        '200':
+          description: Successfully created contributor group
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  traceId:
+                    type: string
+                    example: 225fb54c9714a4b8020af94416dcb910
+                  groupName:
+                    type: string
+                    example: contributor-group-name
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        groupId:
+                          type: string
+                          example: d7476e6d-d2ab-421f-9b7c-0accdee0fd77
+                        contributorIds:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                          - aa72fe57-cf63-4fc7-9c9a-4639bd770fb2
+                    example:
+                    - groupId: d7476e6d-d2ab-421f-9b7c-0accdee0fd77
+                      contributorIds:
+                      - aa72fe57-cf63-4fc7-9c9a-4639bd770fb2
+                  contributorCount:
+                    type: integer
+                    example: 1
+                  time:
+                    type: string
+                    example: '2025-09-25T06:55:39.620699Z'
+                  message:
+                    type: string
+                    example: Contributor group 'contributor-group-name' has been successfully created
+                  contributorIds:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - aa72fe57-cf63-4fc7-9c9a-4639bd770fb2
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  errorCode:
+                    type: integer
+                    example: 2017
+                  message:
+                    type: string
+                    example: 'contributorIds: contributorIds cannot be null; contributorIds: contributorIds cannot be empty; '
+                  traceId:
+                    type: string
+                    example: 085f833dbaf569a1e5d2a23016980627
+                  timestamp:
+                    type: string
+                    example: '2025-09-25T06:56:04.138071Z'
+        '403':
+          description: Access Denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                    example: /publicapi/project-flow/projects/internalcontributor/create-contributor-group
+                  code:
+                    type: integer
+                    example: 9000
+                  method:
+                    type: string
+                    example: POST
+                  time:
+                    type: string
+                    example: '2025-09-25T06:45:35.694878Z'
+                  message:
+                    type: string
+                    example: Access Denied
+                  status:
+                    type: integer
+                    example: 203
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    example: '2025-07-01T10:28:59.893+00:00'
+                  status:
+                    type: integer
+                    example: 500
+                  error:
+                    type: string
+                    example: Internal Server Error
+                  message:
+                    type: string
+                    example: Failed to create contributor group
+                  path:
+                    type: string
+                    example: /v3/project-flow/projects/internalcontributor/create-contributor-group
+      security:
+      - TokenAuth: []
+      operationId: postV3ProjectFlowProjectsInternalcontributorCreateContributorGroup
+      x-operation-id-source: derived
+  /v3/project-flow/projects/internalcontributor/add-contributors-to-existing-group:
+    post:
+      tags:
+      - Internal Contributors
+      summary: Add contributors to existing contributor group
+      description: 'Add existing internal contributors to an already existing contributor group. This API allows you to expand
+
+        contributor groups by adding more members without creating new groups.
+
+
+        **Features:**
+
+        - Add multiple contributors to an existing group in a single operation
+
+        - Automatic validation of contributor IDs against existing internal contributors
+
+        - Group membership validation to ensure the group exists in the specified team
+
+        - Bulk contributor assignment for efficient group management
+
+
+        **Note:**
+
+        - All contributor IDs must exist as internal contributors in the specified team
+
+        - The target group must exist and belong to the specified team
+
+        - Contributors cannot be added to the same group multiple times
+
+
+        **Response Statuses:**
+
+        - `NEWLY_ADDED`: Contributors were successfully added to the group
+
+        - `ALREADY_EXISTS`: Contributors were already part of the group
+
+        - The response may contain both statuses when some contributors are new and others already exist'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - groupId
+              - contributorIds
+              properties:
+                groupId:
+                  type: string
+                  description: The contributor group identifier (e.g., "d7476e6d-d2ab-421f-9b7c-0accdee0fd77")
+                  example: d7476e6d-d2ab-421f-9b7c-0accdee0fd77
+                contributorIds:
+                  type: array
+                  items:
+                    type: string
+                  description: List of contributor IDs to add to the group (e.g., ["a2c5661b-0045-453a-9a90-aead93fab45a", "8a2d267e-7629-4dc3-a5ef-a7dd8604338e"])
+                  example:
+                  - a2c5661b-0045-453a-9a90-aead93fab45a
+                  - 8a2d267e-7629-4dc3-a5ef-a7dd8604338e
+            example:
+              groupId: d7476e6d-d2ab-421f-9b7c-0accdee0fd77
+              contributorIds:
+              - a2c5661b-0045-453a-9a90-aead93fab45a
+              - 8a2d267e-7629-4dc3-a5ef-a7dd8604338e
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: The team identifier (e.g., "cf22e84f-06c8-4955-b626-1c47d245a176")
+        example: cf22e84f-06c8-4955-b626-1c47d245a176
+      x-codeSamples:
+      - lang: curl
+        label: Add contributors to existing group cURL
+        source: "curl -X POST 'https://api.appen.com/v3/project-flow/projects/internalcontributor/add-contributors-to-existing-group?teamId=cf22e84f-06c8-4955-b626-1c47d245a176' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"groupId\": \"665cb1f9-084e-4fb0-b4bf-81ca65eaf3bf\",\n  \"contributorIds\": [\n    \"27d777b5-84a7-49eb-9092-e83bca5ba044\"\n  ]\n}'\n"
+      responses:
+        '200':
+          description: Successfully processed contributors for existing group
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  traceId:
+                    type: string
+                    example: be09ca7cbe2e384483fd5f3d54bda92a
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        groupId:
+                          type: string
+                          example: d7476e6d-d2ab-421f-9b7c-0accdee0fd77
+                        contributorIds:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                          - a2c5661b-0045-453a-9a90-aead93fab45a
+                    example:
+                    - groupId: d7476e6d-d2ab-421f-9b7c-0accdee0fd77
+                      contributorIds:
+                      - a2c5661b-0045-453a-9a90-aead93fab45a
+                  groupId:
+                    type: string
+                    example: d7476e6d-d2ab-421f-9b7c-0accdee0fd77
+                  time:
+                    type: string
+                    example: '2025-09-25T07:11:36.052391Z'
+                  newlyAdded:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        example: 1
+                      message:
+                        type: string
+                        example: Contributors successfully added to group
+                      contributorIds:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                        - a2c5661b-0045-453a-9a90-aead93fab45a
+                      status:
+                        type: string
+                        example: NEWLY_ADDED
+                    example:
+                      count: 1
+                      message: Contributors successfully added to group
+                      contributorIds:
+                      - a2c5661b-0045-453a-9a90-aead93fab45a
+                      status: NEWLY_ADDED
+                  alreadyExists:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        example: 1
+                      message:
+                        type: string
+                        example: Contributors were already part of the group
+                      contributorIds:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                        - a2c5661b-0045-453a-9a90-aead93fab45a
+                      status:
+                        type: string
+                        example: ALREADY_EXISTS
+                    example:
+                      count: 1
+                      message: Contributors were already part of the group
+                      contributorIds:
+                      - a2c5661b-0045-453a-9a90-aead93fab45a
+                      status: ALREADY_EXISTS
+                  message:
+                    type: string
+                    example: Contributors successfully added to existing group
+              examples:
+                newly_added_only:
+                  summary: All contributors newly added to group
+                  value:
+                    traceId: 30a3ece7f813afb7824fc6f3ad5ffb7d
+                    code: 200
+                    data:
+                    - groupId: 82e23d62-f5a3-4e96-aaf8-6b1484707e84
+                      contributorIds:
+                      - 233cea5a-6e2d-4659-a09e-9cdbfe531b15
+                    groupId: 82e23d62-f5a3-4e96-aaf8-6b1484707e84
+                    time: '2025-09-26T06:01:50.382556Z'
+                    newlyAdded:
+                      count: 1
+                      message: Contributors successfully added to group
+                      contributorIds:
+                      - 233cea5a-6e2d-4659-a09e-9cdbfe531b15
+                      status: NEWLY_ADDED
+                    message: Contributors successfully added to existing group
+                already_exists_only:
+                  summary: All contributors already in group
+                  value:
+                    traceId: 7009c1fefc4162815d59d5eef55d31d8
+                    code: 200
+                    data: []
+                    groupId: 82e23d62-f5a3-4e96-aaf8-6b1484707e84
+                    time: '2025-09-26T06:02:16.101918Z'
+                    alreadyExists:
+                      count: 1
+                      message: Contributors were already part of the group
+                      contributorIds:
+                      - 233cea5a-6e2d-4659-a09e-9cdbfe531b15
+                      status: ALREADY_EXISTS
+                    message: All contributors were already part of the group
+                mixed_results:
+                  summary: Some contributors newly added, others already existed
+                  value:
+                    traceId: a1b2c3d4e5f6789012345678901234567
+                    code: 200
+                    data:
+                    - groupId: 82e23d62-f5a3-4e96-aaf8-6b1484707e84
+                      contributorIds:
+                      - 233cea5a-6e2d-4659-a09e-9cdbfe531b15
+                      - 444cea5a-6e2d-4659-a09e-9cdbfe531b15
+                    groupId: 82e23d62-f5a3-4e96-aaf8-6b1484707e84
+                    time: '2025-09-26T06:03:30.123456Z'
+                    newlyAdded:
+                      count: 1
+                      message: Contributors successfully added to group
+                      contributorIds:
+                      - 444cea5a-6e2d-4659-a09e-9cdbfe531b15
+                      status: NEWLY_ADDED
+                    alreadyExists:
+                      count: 1
+                      message: Contributors were already part of the group
+                      contributorIds:
+                      - 233cea5a-6e2d-4659-a09e-9cdbfe531b15
+                      status: ALREADY_EXISTS
+                    message: Some contributors were added successfully, others were already in the group
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  errorCode:
+                    type: integer
+                    example: 2017
+                  message:
+                    type: string
+                    example: 'groupId: groupId cannot be empty; groupId: groupId cannot be null; '
+                  traceId:
+                    type: string
+                    example: 7fb80e18ea76f2f555361b0776955176
+                  timestamp:
+                    type: string
+                    example: '2025-09-25T07:14:36.716429Z'
+        '403':
+          description: Access Denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                    example: /publicapi/project-flow/projects/internalcontributor/add-contributors-to-existing-group
+                  code:
+                    type: integer
+                    example: 9000
+                  method:
+                    type: string
+                    example: POST
+                  time:
+                    type: string
+                    example: '2025-09-25T06:45:35.694878Z'
+                  message:
+                    type: string
+                    example: Access Denied
+                  status:
+                    type: integer
+                    example: 203
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    example: '2025-07-01T10:28:59.893+00:00'
+                  status:
+                    type: integer
+                    example: 500
+                  error:
+                    type: string
+                    example: Internal Server Error
+                  message:
+                    type: string
+                    example: Failed to add contributors to group
+                  path:
+                    type: string
+                    example: /v3/project-flow/projects/internalcontributor/add-contributors-to-existing-group
+      security:
+      - TokenAuth: []
+      operationId: postV3ProjectFlowProjectsInternalcontributorAddContributorsToExistingGroup
+      x-operation-id-source: derived
+  /v3/project-flow/projects/internalcontributor/list-all-contributor-groups:
+    post:
+      tags:
+      - Internal Contributors
+      summary: List all contributor groups
+      description: 'Retrieve a paginated list of all contributor groups for a team with filtering and sorting options.
+
+        This endpoint provides a comprehensive view of all groups and their associated contributors.
+
+
+        **Features:**
+
+        - Paginated list of all contributor groups in a team
+
+        - Returns contributor group details like groupId, name, teamId, description and number of contributors in that particular group
+
+        - Supports search and filtering capabilities'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                  minimum: 1
+                  default: 1
+                pageSize:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  default: 10
+                descending:
+                  type: boolean
+                  default: false
+                orderBy:
+                  type: string
+                  default: name
+                query:
+                  type: string
+                  default: ''
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: The team identifier
+      x-codeSamples:
+      - lang: curl
+        label: List all contributor groups cURL
+        source: "curl -X POST 'https://api.appen.com/v3/project-flow/projects/internalcontributor/list-all-contributor-groups?teamId=cf22e84f-06c8-4955-b626-1c47d245a176' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"pageNum\": 1,\n  \"pageSize\": 10,\n  \"descending\": false,\n  \"orderBy\": \"name\",\n  \"query\": \"\"\n}'\n"
+      responses:
+        '200':
+          description: Successfully retrieved contributor groups
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  traceId:
+                    type: string
+                    example: dc376b42379de1c4a021c318cddbd731
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      content:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            groupId:
+                              type: string
+                              example: 5d652e11-cf4b-4c9d-be82-b5efda4edbc0
+                            name:
+                              type: string
+                              example: aggrawal001
+                            teamId:
+                              type: string
+                              example: cf22e84f-06c8-4955-b626-1c47d245a176
+                            description:
+                              type:
+                              - string
+                              - 'null'
+                              example: null
+                            numberOfContributors:
+                              type: integer
+                              example: 5
+                        example:
+                        - groupId: 5d652e11-cf4b-4c9d-be82-b5efda4edbc0
+                          name: aggrawal001
+                          teamId: cf22e84f-06c8-4955-b626-1c47d245a176
+                          description: null
+                          numberOfContributors: 5
+                      pageable:
+                        type: object
+                        properties:
+                          page:
+                            type: integer
+                            example: 0
+                          size:
+                            type: integer
+                            example: 10
+                          sort:
+                            type: object
+                            properties:
+                              orders:
+                                type: array
+                                example: []
+                              empty:
+                                type: boolean
+                                example: true
+                              sorted:
+                                type: boolean
+                                example: false
+                              unsorted:
+                                type: boolean
+                                example: true
+                          offset:
+                            type: integer
+                            example: 0
+                          pageNumber:
+                            type: integer
+                            example: 0
+                          pageSize:
+                            type: integer
+                            example: 10
+                          paged:
+                            type: boolean
+                            example: true
+                          unpaged:
+                            type: boolean
+                            example: false
+                      total:
+                        type: integer
+                        example: 6
+                      last:
+                        type: boolean
+                        example: true
+                      totalElements:
+                        type: integer
+                        example: 6
+                      totalPages:
+                        type: integer
+                        example: 1
+                      size:
+                        type: integer
+                        example: 10
+                      number:
+                        type: integer
+                        example: 0
+                      sort:
+                        type: object
+                        properties:
+                          orders:
+                            type: array
+                            example: []
+                          empty:
+                            type: boolean
+                            example: true
+                          sorted:
+                            type: boolean
+                            example: false
+                          unsorted:
+                            type: boolean
+                            example: true
+                      first:
+                        type: boolean
+                        example: true
+                      numberOfElements:
+                        type: integer
+                        example: 6
+                      empty:
+                        type: boolean
+                        example: false
+                  query:
+                    type: string
+                    example: ''
+                  pageSize:
+                    type: integer
+                    example: 10
+                  orderBy:
+                    type: string
+                    example: name
+                  time:
+                    type: string
+                    example: '2025-09-25T07:24:00.944729Z'
+                  message:
+                    type: string
+                    example: Contributor groups retrieved successfully
+                  pageNum:
+                    type: integer
+                    example: 1
+                  descending:
+                    type: boolean
+                    example: false
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  errorCode:
+                    type: integer
+                    example: 2017
+                  message:
+                    type: string
+                    example: Invalid JSON format in request body. Please check your request data.
+                  traceId:
+                    type: string
+                    example: 622669acf25f0763d86438e1152969f4
+                  timestamp:
+                    type: string
+                    example: '2025-09-25T07:28:31.558456Z'
+        '403':
+          description: Access Denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                    example: /publicapi/project-flow/projects/internalcontributor/list-all-contributor-groups
+                  code:
+                    type: integer
+                    example: 9000
+                  method:
+                    type: string
+                    example: POST
+                  time:
+                    type: string
+                    example: '2025-09-25T06:45:35.694878Z'
+                  message:
+                    type: string
+                    example: Access Denied
+                  status:
+                    type: integer
+                    example: 203
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    example: '2025-07-01T10:28:59.893+00:00'
+                  status:
+                    type: integer
+                    example: 500
+                  error:
+                    type: string
+                    example: Internal Server Error
+                  message:
+                    type: string
+                    example: Failed to retrieve contributor groups
+                  path:
+                    type: string
+                    example: /v3/project-flow/projects/internalcontributor/list-all-contributor-groups
+      security:
+      - TokenAuth: []
+      operationId: postV3ProjectFlowProjectsInternalcontributorListAllContributorGroups
+      x-operation-id-source: derived
+  /v3/project-flow/projects/internalcontributor/assign-job:
+    post:
+      tags:
+      - Internal Contributors
+      summary: Assign contributors to a job
+      description: 'Assign one or more internal contributors to a specific job within a project. This operation creates the association
+
+        between contributors and jobs, enabling them to work on the specified job tasks.
+
+
+        **Features:**
+
+        - Bulk assignment of multiple contributors to a single job
+
+        - Validates that contributors exist and are not already assigned to the job
+
+
+        **Note:**
+
+        - Contributors cannot be assigned to Data Collection (DC) jobs
+
+        - DC jobs include both DATA_COLLECTION and DATA_COLLECTION_QA job types
+
+        - Job ID must belong to the provided Project ID
+
+
+        **Limitations**
+
+        - Assigning a contributor group to a job will be released in the next version.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - projectId
+              - jobId
+              - contributorIds
+              properties:
+                projectId:
+                  type: string
+                  description: The project identifier (e.g., "1eac32c6-165b-47f8-827e-400d2b137138")
+                  example: 1eac32c6-165b-47f8-827e-400d2b137138
+                jobId:
+                  type: string
+                  description: The job identifier (e.g., "5483e81c-b31c-4549-bfaa-bbfe955ecc9a")
+                  example: 5483e81c-b31c-4549-bfaa-bbfe955ecc9a
+                contributorIds:
+                  type: array
+                  items:
+                    type: string
+                  description: List of contributor IDs to assign (e.g., ["2b16b2ba-f9a6-470c-aa85-f2266a4ea05b", "6cd91478-a718-47ff-9ecf-e7011b68d786"])
+                  example:
+                  - 2b16b2ba-f9a6-470c-aa85-f2266a4ea05b
+                  - 6cd91478-a718-47ff-9ecf-e7011b68d786
+            example:
+              projectId: 1eac32c6-165b-47f8-827e-400d2b137138
+              jobId: 5483e81c-b31c-4549-bfaa-bbfe955ecc9a
+              contributorIds:
+              - 2b16b2ba-f9a6-470c-aa85-f2266a4ea05b
+              - 6cd91478-a718-47ff-9ecf-e7011b68d786
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: The team identifier
+        example: cf22e84f-06c8-4955-b626-1c47d245a176
+      x-codeSamples:
+      - lang: curl
+        label: Assign contributors to job cURL
+        source: "curl -X POST 'https://api.appen.com/v3/project-flow/projects/internalcontributor/assign-job?teamId=cf22e84f-06c8-4955-b626-1c47d245a176' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"projectId\": \"1eac32c6-165b-47f8-827e-400d2b137138\",\n  \"jobId\": \"5483e81c-b31c-4549-bfaa-bbfe955ecc9a\",\n  \"contributorIds\": [\n    \"2b16b2ba-f9a6-470c-aa85-f2266a4ea05b\",\n    \"6cd91478-a718-47ff-9ecf-e7011b68d786\"\n  ]\n}'\n"
+      responses:
+        '200':
+          description: Successfully assigned contributors to job
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  traceId:
+                    type: string
+                    example: af94b0d67572f10428ea28ea65abde52
+                  jobId:
+                    type: string
+                    example: 66182bdc-c411-4eac-893c-3aaf0e5cd09a
+                  code:
+                    type: integer
+                    example: 200
+                  time:
+                    type: string
+                    example: '2025-09-25T05:48:22.748429Z'
+                  message:
+                    type: string
+                    example: Contributors successfully assigned to job
+                  projectId:
+                    type: string
+                    example: cd586215-b802-40b3-871c-0bc16af300b5
+                  contributorIds:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - fadbcef1-a438-4052-8b66-922981f8c9b3
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  errorCode:
+                    type: integer
+                    example: 2017
+                  message:
+                    type: string
+                    example: 'jobId: jobId cannot be null; jobId: jobId cannot be empty; '
+                  traceId:
+                    type: string
+                    example: 925aeac65cdbb619ff18ecd15760b4e5
+                  timestamp:
+                    type: string
+                    example: '2025-09-25T06:17:52.529291Z'
+              examples:
+                missing_required_fields:
+                  summary: Missing required fields
+                  value:
+                    status: 400
+                    errorCode: 2017
+                    message: 'jobId: jobId cannot be null; jobId: jobId cannot be empty; '
+                    traceId: 925aeac65cdbb619ff18ecd15760b4e5
+                    timestamp: '2025-09-25T06:17:52.529291Z'
+                incorrect_contributor_id:
+                  summary: Incorrect contributor id in request payload
+                  value:
+                    status: 400
+                    errorCode: 4022
+                    message: 'The following contributors do not exist: 32acecdb-0d69-4daf-ab06-fa1bc7998cc5'
+                    traceId: 47aa111055d09455d33b44b63debac79
+                    timestamp: '2025-09-26T05:45:40.363903Z'
+        '404':
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  errorCode:
+                    type: integer
+                    example: 4004
+                  message:
+                    type: string
+                    example: 'Job not found: 66182bdc-c411-4eac-893c-3aaf0'
+                  traceId:
+                    type: string
+                    example: acb20654486f374b27db77b5d4e16973
+                  timestamp:
+                    type: string
+                    example: '2025-09-25T06:17:27.204716Z'
+        '403':
+          description: Access Denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                    example: /publicapi/project-flow/projects/internalcontributor/assign-job
+                  code:
+                    type: integer
+                    example: 9000
+                  method:
+                    type: string
+                    example: POST
+                  time:
+                    type: string
+                    example: '2025-09-25T06:45:35.694878Z'
+                  message:
+                    type: string
+                    example: Access Denied
+                  status:
+                    type: integer
+                    example: 203
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    example: '2025-07-01T10:28:59.893+00:00'
+                  status:
+                    type: integer
+                    example: 500
+                  error:
+                    type: string
+                    example: Internal Server Error
+                  message:
+                    type: string
+                    example: Failed to update job
+                  path:
+                    type: string
+                    example: /v3/project-flow/projects/internalcontributor/assign-job
+      security:
+      - TokenAuth: []
+      operationId: postV3ProjectFlowProjectsInternalcontributorAssignJob
+      x-operation-id-source: derived
+  /v3/project-flow/projects/internalcontributor/un-assign-job:
+    post:
+      tags:
+      - Internal Contributors
+      summary: Unassign contributors from a job
+      description: 'Unassign one or more internal contributors from a specific job within a project. This operation removes the association
+
+        between contributors and jobs, preventing them from working on the specified job tasks.
+
+
+        **Features:**
+
+        - Bulk unassignment of multiple contributors from a single job
+
+        - Validates that contributors exist and are currently assigned to the job
+
+
+        **Note:**
+
+        - Job ID must belong to the provided Project ID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - projectId
+              - jobId
+              - contributorIds
+              properties:
+                projectId:
+                  type: string
+                  description: The project identifier
+                  example: 1eac32c6-165b-47f8-827e-400d2b137138
+                jobId:
+                  type: string
+                  description: The job identifier
+                  example: 5483e81c-b31c-4549-bfaa-bbfe955ecc9a
+                contributorIds:
+                  type: array
+                  items:
+                    type: string
+                  description: List of contributor IDs to unassign
+                  example:
+                  - 2b16b2ba-f9a6-470c-aa85-f2266a4ea05b
+                  - 6cd91478-a718-47ff-9ecf-e7011b68d786
+            example:
+              projectId: 1eac32c6-165b-47f8-827e-400d2b137138
+              jobId: 5483e81c-b31c-4549-bfaa-bbfe955ecc9a
+              contributorIds:
+              - 2b16b2ba-f9a6-470c-aa85-f2266a4ea05b
+              - 6cd91478-a718-47ff-9ecf-e7011b68d786
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: The team identifier
+        example: cf22e84f-06c8-4955-b626-1c47d245a176
+      x-codeSamples:
+      - lang: curl
+        label: Unassign contributors from job cURL
+        source: "curl -X POST 'https://api.appen.com/v3/project-flow/projects/internalcontributor/un-assign-job?teamId=cf22e84f-06c8-4955-b626-1c47d245a176' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"projectId\": \"1eac32c6-165b-47f8-827e-400d2b137138\",\n  \"jobId\": \"5483e81c-b31c-4549-bfaa-bbfe955ecc9a\",\n  \"contributorIds\": [\n    \"2b16b2ba-f9a6-470c-aa85-f2266a4ea05b\",\n    \"6cd91478-a718-47ff-9ecf-e7011b68d786\"\n  ]\n}'\n"
+      responses:
+        '200':
+          description: Successfully unassigned contributors from job
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  traceId:
+                    type: string
+                    example: 13d125c9c6e4bc25cc9e951706b48a77
+                  jobId:
+                    type: string
+                    example: 66182bdc-c411-4eac-893c-3aaf0e5cd09a
+                  code:
+                    type: integer
+                    example: 200
+                  time:
+                    type: string
+                    example: '2025-09-25T06:29:17.598171Z'
+                  message:
+                    type: string
+                    example: Contributors successfully un-assigned from job
+                  projectId:
+                    type: string
+                    example: cd586215-b802-40b3-871c-0bc16af300b5
+                  contributorIds:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - fadbcef1-a438-4052-8b66-922981f8c9b3
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  errorCode:
+                    type: integer
+                    example: 2017
+                  message:
+                    type: string
+                    example: 'jobId: jobId cannot be empty; jobId: jobId cannot be null; '
+                  traceId:
+                    type: string
+                    example: 669bb5cd7a14ca09db6595e7e2ddf107
+                  timestamp:
+                    type: string
+                    example: '2025-09-25T06:30:54.778799Z'
+              examples:
+                missing_required_fields:
+                  summary: Missing required fields
+                  value:
+                    status: 400
+                    errorCode: 2017
+                    message: 'jobId: jobId cannot be empty; jobId: jobId cannot be null; '
+                    traceId: 669bb5cd7a14ca09db6595e7e2ddf107
+                    timestamp: '2025-09-25T06:30:54.778799Z'
+                incorrect_contributor_id:
+                  summary: Incorrect contributor id in request payload
+                  value:
+                    status: 400
+                    errorCode: 4022
+                    message: 'The following contributors do not exist: 32acecdb-0d69-4daf-ab06-fa1bc7998cc5'
+                    traceId: 47aa111055d09455d33b44b63debac79
+                    timestamp: '2025-09-26T05:45:40.363903Z'
+        '404':
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  errorCode:
+                    type: integer
+                    example: 4004
+                  message:
+                    type: string
+                    example: 'Job not found: 66182bdc-c411-4eac-893c-3aa9a'
+                  traceId:
+                    type: string
+                    example: c75bfdee74803b3a785267aebc5f4c3d
+                  timestamp:
+                    type: string
+                    example: '2025-09-25T06:31:18.215557Z'
+        '403':
+          description: Access Denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                    example: /publicapi/project-flow/projects/internalcontributor/un-assign-job
+                  code:
+                    type: integer
+                    example: 9000
+                  method:
+                    type: string
+                    example: POST
+                  time:
+                    type: string
+                    example: '2025-09-25T06:45:35.694878Z'
+                  message:
+                    type: string
+                    example: Access Denied
+                  status:
+                    type: integer
+                    example: 203
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    example: '2025-07-01T10:28:59.893+00:00'
+                  status:
+                    type: integer
+                    example: 500
+                  error:
+                    type: string
+                    example: Internal Server Error
+                  message:
+                    type: string
+                    example: Failed to update job
+                  path:
+                    type: string
+                    example: /v3/project-flow/projects/internalcontributor/un-assign-job
+      security:
+      - TokenAuth: []
+      operationId: postV3ProjectFlowProjectsInternalcontributorUnAssignJob
+      x-operation-id-source: derived
+  /v3/project-flow/projects/internalcontributor/delete-contributor:
+    delete:
+      tags:
+      - Internal Contributors
+      summary: Delete internal contributors
+      description: 'Delete one or more internal contributors from a team. This operation permanently removes contributors and their
+
+        associations from the system.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - contributorIds
+              properties:
+                contributorIds:
+                  type: array
+                  items:
+                    type: string
+                  description: List of contributor IDs to delete (e.g., ["09364167-73d5-4836-8d40-7580cfc3f8e2", "8a2d267e-7629-4dc3-a5ef-a7dd8604338e"])
+                  example:
+                  - 09364167-73d5-4836-8d40-7580cfc3f8e2
+                  - 8a2d267e-7629-4dc3-a5ef-a7dd8604338e
+            example:
+              contributorIds:
+              - 09364167-73d5-4836-8d40-7580cfc3f8e2
+              - 8a2d267e-7629-4dc3-a5ef-a7dd8604338e
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: The team identifier (e.g., "cf22e84f-06c8-4955-b626-1c47d245a176")
+        example: cf22e84f-06c8-4955-b626-1c47d245a176
+      x-codeSamples:
+      - lang: curl
+        label: Delete contributors cURL
+        source: "curl -X DELETE 'https://api.appen.com/v3/project-flow/projects/internalcontributor/delete-contributor?teamId=cf22e84f-06c8-4955-b626-1c47d245a176' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"contributorIds\": [\n    \"87a9539a-561b-41d3-8e56-f30aacefbaaa\",\n    \"98a9539a-561b-41d3-8e56-f40aacefbddd\"\n  ]\n}'\n"
+      responses:
+        '200':
+          description: Successfully deleted contributors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  traceId:
+                    type: string
+                    example: bddafbf736aa2a9fc065082d50931d37
+                  code:
+                    type: integer
+                    example: 200
+                  teamId:
+                    type: string
+                    example: cf22e84f-06c8-4955-b626-1c47d245a176
+                  deletedCount:
+                    type: integer
+                    example: 2
+                  time:
+                    type: string
+                    example: '2025-09-25T06:41:34.871827Z'
+                  message:
+                    type: string
+                    example: Contributors successfully deleted from the team
+                  contributorIds:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - 09364167-73d5-4836-8d40-7580cfc3f8e2
+                    - 8a2d267e-7629-4dc3-a5ef-a7dd8604338e
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  errorCode:
+                    type: integer
+                    example: 2017
+                  message:
+                    type: string
+                    example: 'contributorIds: contributorIds cannot be empty; contributorIds: contributorIds cannot be null; '
+                  traceId:
+                    type: string
+                    example: 78a7798db41f272de72c957481d839a5
+                  timestamp:
+                    type: string
+                    example: '2025-09-25T06:43:23.873723Z'
+        '403':
+          description: Access Denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                    example: /publicapi/project-flow/projects/internalcontributor/delete-contributor
+                  code:
+                    type: integer
+                    example: 9000
+                  method:
+                    type: string
+                    example: DELETE
+                  time:
+                    type: string
+                    example: '2025-09-25T06:45:35.694878Z'
+                  message:
+                    type: string
+                    example: Access Denied
+                  status:
+                    type: integer
+                    example: 203
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    example: '2025-07-01T10:28:59.893+00:00'
+                  status:
+                    type: integer
+                    example: 500
+                  error:
+                    type: string
+                    example: Internal Server Error
+                  message:
+                    type: string
+                    example: Failed to delete contributors
+                  path:
+                    type: string
+                    example: /v3/project-flow/projects/internalcontributor/delete-contributor
+      security:
+      - TokenAuth: []
+      operationId: deleteV3ProjectFlowProjectsInternalcontributorDeleteContributor
+      x-operation-id-source: derived
+  /v3/project-flow/projects/internalcontributor/delete-contributor-group:
+    delete:
+      tags:
+      - Internal Contributors
+      summary: Delete internal contributor groups
+      description: 'Delete one or more internal contributor groups from a team. This operation permanently removes contributor groups
+
+        and their associations from the system.
+
+
+        **Features:**
+
+        - Delete multiple contributor groups in a single operation
+
+        - Automatic validation of group IDs against existing groups
+
+
+        **Note:**
+
+        - All group IDs must exist as contributor groups in the specified team
+
+        - Groups associated with active jobs cannot be deleted'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - groupIds
+              properties:
+                groupIds:
+                  type: array
+                  items:
+                    type: string
+                  description: List of contributor group IDs to delete
+                  example:
+                  - aa6ce6ca-1c55-4941-ab2c-aba2e422de02
+                  - 9b6333b2-c29e-4ec1-911e-d7ca971333f6
+            example:
+              groupIds:
+              - aa6ce6ca-1c55-4941-ab2c-aba2e422de02
+              - 9b6333b2-c29e-4ec1-911e-d7ca971333f6
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: The team identifier
+        example: cf22e84f-06c8-4955-b626-1c47d245a176
+      x-codeSamples:
+      - lang: curl
+        label: Delete contributor groups cURL
+        source: "curl -X DELETE 'https://api.appen.com/v3/project-flow/projects/internalcontributor/delete-contributor-group?teamId=cf22e84f-06c8-4955-b626-1c47d245a176' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"groupIds\": [\n    \"aa6ce6ca-1c55-4941-ab2c-aba2e422de02\",\n    \"9b6333b2-c29e-4ec1-911e-d7ca971333f6\"\n  ]\n}'\n"
+      responses:
+        '200':
+          description: Successfully deleted contributor groups
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  traceId:
+                    type: string
+                    example: 89b7e09a4322f4cdafc52d40065368af
+                  code:
+                    type: integer
+                    example: 200
+                  teamId:
+                    type: string
+                    example: cf22e84f-06c8-4955-b626-1c47d245a176
+                  groupIds:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - c429e15c-51e9-4e2f-98c6-8e816d227d5f
+                  deletedCount:
+                    type: integer
+                    example: 1
+                  time:
+                    type: string
+                    example: '2025-09-25T08:22:15.653779Z'
+                  message:
+                    type: string
+                    example: Contributor groups successfully deleted
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  errorCode:
+                    type: integer
+                    example: 2017
+                  message:
+                    type: string
+                    example: 'groupIds: groupIds cannot be empty; groupIds: groupIds cannot be null; '
+                  traceId:
+                    type: string
+                    example: 78a7798db41f272de72c957481d839a5
+                  timestamp:
+                    type: string
+                    example: '2025-09-25T06:43:23.873723Z'
+        '403':
+          description: Access Denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                    example: /publicapi/project-flow/projects/internalcontributor/delete-contributor-group
+                  code:
+                    type: integer
+                    example: 9000
+                  method:
+                    type: string
+                    example: DELETE
+                  time:
+                    type: string
+                    example: '2025-09-25T06:45:35.694878Z'
+                  message:
+                    type: string
+                    example: Access Denied
+                  status:
+                    type: integer
+                    example: 203
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    example: '2025-07-01T10:28:59.893+00:00'
+                  status:
+                    type: integer
+                    example: 500
+                  error:
+                    type: string
+                    example: Internal Server Error
+                  message:
+                    type: string
+                    example: Failed to delete contributor groups
+                  path:
+                    type: string
+                    example: /v3/project-flow/projects/internalcontributor/delete-contributor-group
+      security:
+      - TokenAuth: []
+      operationId: deleteV3ProjectFlowProjectsInternalcontributorDeleteContributorGroup
+      x-operation-id-source: derived
+  /v3/project-flow/projects/internalcontributor/download-contributors:
+    post:
+      tags:
+      - Internal Contributors
+      summary: Download contributors from a team as CSV
+      description: 'Download a list of internal contributors from a team as a CSV file. The CSV includes contributor details and their
+
+        associated group information for easy data export and analysis.
+
+
+        **Features:**
+
+        - Exports selected contributors to CSV format
+
+        - Includes contributor ID, name, email address, and group names'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - contributorIds
+              properties:
+                contributorIds:
+                  type: array
+                  items:
+                    type: string
+                  description: List of contributor IDs to download
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: The team identifier
+      x-codeSamples:
+      - lang: curl
+        label: Download contributors cURL
+        source: "curl -X POST \"https://api.appen.com/v3/project-flow/projects/internalcontributor/download-contributors?teamId=cf22e84f-06c8-4955-b626-1c47d245a176\" \\\n-H \"Content-Type: application/json\" \\\n-H \"Authorization: Token token=Jj5XosYzbw1nN6nYaYuU\" \\\n-d '{\n\"contributorIds\": [\n  \"32acecdb-0d69-4daf-ab06-fa1bc7998cc4\",\n  \"2fc7f0a5-bb21-40c9-82dd-ade290c96f19\"\n]\n}' \\\n  --output contributors.csv\n"
+      responses:
+        '200':
+          description: Successfully downloaded contributors
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+              example: 'ContributorId,Name,EmailAddress,Group Names
+
+                32acecdb-0d69-4daf-ab06-fa1bc7998cc4,abcd12345,abcd12345@gmail.com,[publicapi, aggrawal001]
+
+                2fc7f0a5-bb21-40c9-82dd-ade290c96f19,abcd1234www,abcd123neww4@gmail.com,[No Group]
+
+                '
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 400
+                  errorCode:
+                    type: integer
+                    example: 2017
+                  message:
+                    type: string
+                    example: 'contributorIds: contributorIds cannot be empty; '
+                  traceId:
+                    type: string
+                    example: f87902ba223e6f63d96478e39a6cc40e
+                  timestamp:
+                    type: string
+                    example: '2025-09-25T08:09:03.249341Z'
+        '403':
+          description: Access Denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                    example: /publicapi/project-flow/projects/internalcontributor/download-contributors
+                  code:
+                    type: integer
+                    example: 9000
+                  method:
+                    type: string
+                    example: POST
+                  time:
+                    type: string
+                    example: '2025-09-25T06:45:35.694878Z'
+                  message:
+                    type: string
+                    example: Access Denied
+                  status:
+                    type: integer
+                    example: 203
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    example: '2025-07-01T10:28:59.893+00:00'
+                  status:
+                    type: integer
+                    example: 500
+                  error:
+                    type: string
+                    example: Internal Server Error
+                  message:
+                    type: string
+                    example: Failed to download contributors
+                  path:
+                    type: string
+                    example: /v3/project-flow/projects/internalcontributor/download-contributors
+      security:
+      - TokenAuth: []
+      operationId: postV3ProjectFlowProjectsInternalcontributorDownloadContributors
+      x-operation-id-source: derived
+components:
+  securitySchemes:
+    TokenAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+      description: 'API Token authentication. Pass your API token in the Authorization header:
+
+        `Authorization: Token token=your-api-token-here`
+
+        '

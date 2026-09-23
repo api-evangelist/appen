@@ -1,0 +1,16 @@
+generated: '2026-09-22'
+method: derived
+source: openapi/appen-openapi-remote.yaml
+summary:
+  types:
+  - http
+schemes:
+- name: TokenAuth
+  type: http
+  scheme: bearer
+  bearerFormat: Token
+  description: |-
+    API Token authentication. Pass your API token in the Authorization header:
+    `Authorization: Token token=your-api-token-here`
+  sources:
+  - openapi/appen-openapi-remote.yaml

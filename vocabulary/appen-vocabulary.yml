@@ -1,0 +1,96 @@
+generated: '2026-09-22'
+method: derived
+generator: derive-vocabulary.py
+source: openapi/appen-openapi-remote.yaml
+vocabulary:
+  name: Appen Domain Vocabulary
+  description: 'Terms declared by Appen''s own API contract: its resource groups, objects and enumerations, with the contract''s definitions.
+    Derived, not authored.'
+  version: '2026-09-22'
+  terms:
+  - term: Projects
+    definition: 'Project management operations for organizing and structuring your data annotation workflows. - **Project Structure:** - Projects
+      serve as containers for organizing related jobs and data - Each project belongs to a specific team and can contain multiple jobs - Projects
+      provide a logical grouping for workflow management - **Key Operations:** - **Create Projects**: Initialize new project containers w'
+    tags:
+    - Resource Group
+    source: openapi/appen-openapi-remote.yaml
+  - term: Upload
+    definition: 'File upload operations for importing datasets and data into your projects and jobs. - **Dataset Upload Process:** - **Upload
+      Files**: Send CSV files containing your data to existing projects - **Status Monitoring**: Track upload progress and completion status -
+      **File Validation**: Automatic validation of CSV format, headers, and content - **Supported File Formats:** - **CSV Files**: Primary forma'
+    tags:
+    - Resource Group
+    source: openapi/appen-openapi-remote.yaml
+  - term: Jobs
+    definition: 'Job management operations for creating, configuring, and controlling data annotation workflows. - **Job Lifecycle Management:**
+      - **Create Jobs**: Initialize new annotation tasks with project association and type specification - **Update Settings**: Modify job configuration,
+      instructions, and workflow parameters - **Launch Jobs**: Activate jobs from DRAFT to RUNNING state for contributor access - '
+    tags:
+    - Resource Group
+    source: openapi/appen-openapi-remote.yaml
+  - term: Contributor Access URL Construction
+    definition: '## Contributor Access URL Construction With this release, customers can now generate the Contributor Access URL programmatically.
+      ### URL Structure ``` https://account.appen.com/quality/tasks/{jobId}?secret={secret} ``` ### Components - **Base URL**: `https://account.appen.com/quality/tasks/`
+      (constant string) - **Job ID**: Returned in the response of the Create Job API (example: `2d215241-00bc-44'
+    tags:
+    - Resource Group
+    source: openapi/appen-openapi-remote.yaml
+  - term: Route Units
+    definition: 'Unit management operations for handling individual data rows and their distribution across jobs. - **Unit Operations:** - **List
+      Units**: Retrieve and filter units within a project with pagination capabilities - **Send Units to Job**: Route units from projects to specific
+      jobs for annotation work - **Unit Filtering**: Filter units by job status, dataset row type, and other criteria - **Bulk Operat'
+    tags:
+    - Resource Group
+    source: openapi/appen-openapi-remote.yaml
+  - term: Download
+    definition: 'Generate and download reports for either a single job or an entire project, and download datasets from projects. - **Choose scope
+      with exactly one of:** - jobId: download a Job-level report - projectId: download a Project-level report or dataset (Do not send both.)
+      - **Required query parameters:** - type: the report you want to generate or dataset to download - filename: the output file name (e.g.'
+    tags:
+    - Resource Group
+    source: openapi/appen-openapi-remote.yaml
+  - term: Test Questions
+    definition: 'Test question management operations for evaluating contributor performance and ensuring quality assurance in data annotation
+      workflows. - **Key Operations:** - **Add Test Questions**: Create new test questions and link them to specific units - **Upload Test Questions**:
+      Bulk upload test questions from CSV files - **Update Test Questions**: Modify existing test questions and its settings - **Test Q'
+    tags:
+    - Resource Group
+    source: openapi/appen-openapi-remote.yaml
+  - term: Error
+    definition: 'Object declared by the contract with fields: timestamp, status, error, message, path, trace.'
+    tags:
+    - Object
+    source: openapi/appen-openapi-remote.yaml#/components/schemas/Error
+  - term: ErrorResponse
+    definition: 'Object declared by the contract with fields: status, errorMessage, traceId, timestamp.'
+    tags:
+    - Object
+    source: openapi/appen-openapi-remote.yaml#/components/schemas/ErrorResponse
+  - term: ConflictResponse
+    definition: 'Object declared by the contract with fields: code, message.'
+    tags:
+    - Object
+    source: openapi/appen-openapi-remote.yaml#/components/schemas/ConflictResponse
+  - term: SimpleError
+    definition: 'Object declared by the contract with fields: error.'
+    tags:
+    - Object
+    source: openapi/appen-openapi-remote.yaml#/components/schemas/SimpleError
+  - term: JobDTO
+    definition: 'Job Data Transfer Object for updating job settings. ## FIELD OVERVIEW ** REQUIRED (5):** `id`, `projectId`, `teamId`, `title`,
+      `type` ** CORE CONFIG:** `version`, `assignmentLeaseExpiry`, `judgmentsPerRow`, `rowsPerPage`, `displayContributorName`, `judgmentModifiable`
+      ** WORKFLOW:** `state`, `activeStatus`, `feedback`, `sendBackOp`, `unitSegmentType`, `allowSelfQa`, `allowAbandonUnits` ** TIME & L'
+    tags:
+    - Object
+    source: openapi/appen-openapi-remote.yaml#/components/schemas/JobDTO
+  - term: Response
+    definition: 'Object declared by the contract with fields: message, code, data, traceId, time.'
+    tags:
+    - Object
+    source: openapi/appen-openapi-remote.yaml#/components/schemas/Response
+  - term: UploadErrorCodes
+    definition: Comprehensive list of error codes for the upload internal contributors API
+    tags:
+    - Object
+    source: openapi/appen-openapi-remote.yaml#/components/schemas/UploadErrorCodes

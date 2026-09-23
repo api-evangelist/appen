@@ -1,23 +1,328 @@
 aid: appen
+
 name: Appen
-description: 'Appen is a company surfaced via the API Evangelist harvest backlog (source: data) and added
-  to the network as a stub for full-pipeline profiling.'
+
+image: https://cdn.prod.website-files.com/656a605609413dfd3feb9d34/6aa317a84eab4c7f1644a689_Appen-social-share.png
+
+description: Appen provides high-quality training data and data annotation services for AI models, leveraging a global crowd of over 500,000 contributors.
+  With 30 years of experience, they offer data products across speech, vision, language, and structured data, supporting enterprises in building
+  reliable AI systems. Their platform includes tools for data collection, labeling, validation, and evaluation, ensuring compliance and security
+  with SOC 2 and ISO 27001 certifications.
+
 url: https://raw.githubusercontent.com/api-evangelist/appen/refs/heads/main/apis.yml
+
 x-type: company
+
 x-source: harvest:data
-x-tier: stub
-x-tier-reason: harvest
+
+x-tier: profiled
+x-tier-reason: enrichment pass 2026-09-22 (modular-v1; was harvest)
+
 specificationVersion: '0.20'
+
 created: '2026-09-22'
+
 modified: '2026-09-22'
+
 tags:
-- Company
-apis: []
+- AI
+- Data
+- Annotation
+- TrainingData
+- Enterprise
+
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
+
 common:
+- type: AgenticAccess
+  url: agentic-access/appen-agentic-access.yml
+- type: Spectral
+  url: rules/appen-rules.yml
+- type: JSONLD
+  url: json-ld/appen-context.jsonld
+- type: Vocabulary
+  url: vocabulary/appen-vocabulary.yml
+- type: DataModel
+  url: data-model/appen-data-model.yml
+- type: ErrorCatalog
+  url: errors/appen-problem-types.yml
+- type: Conformance
+  url: conformance/appen-conformance.yml
+- type: LLMsTxt
+  url: llms/appen-llms.txt
+- type: SecurityTxt
+  url: well-known/appen-status-security.txt
+- type: WellKnown
+  url: well-known/appen-well-known.yml
+- type: Hosts
+  url: hosts/appen-hosts.yml
+- type: Vendors
+  url: vendors/appen-vendors.yml
+- type: StatusPage
+  url: https://status.appen.com/
+- type: Authentication
+  url: authentication/appen-authentication.yml
+- type: DomainSecurity
+  url: security/appen-domain-security.yml
 - type: Website
   url: https://appen.com/
+- type: DeveloperPortal
+  url: https://developer.appen.com/
+- type: Documentation
+  url: https://developer.appen.com/
+- type: APIReference
+  url: https://developer.appen.com/open-api.yaml
+- type: Blog
+  url: https://www.appen.com/blog
+- type: GitHubOrganization
+  url: https://github.com/Appen
+- type: PrivacyPolicy
+  url: https://www.appen.com/legal-policies/privacy-statement
+
+apis:
+- name: Appen AI Data Annotation Platform API
+  description: Appen AI Data Annotation Platform (ADAP) API
+  humanURL: https://developer.appen.com/open-api.yaml
+  baseURL: https://api.appen.com
+  properties: null
+  aid: appen:appen-ai-data-annotation-platform-api
+- aid: appen:appen-download-api
+  name: Appen Download API
+  description: "Generate and download reports for either a single job or an entire project, and download\
+    \ datasets from projects.\n\n- **Choose scope with exactly one of:**\n  - jobId: download a Job-level\
+    \ report\n  - projectId: download a Project-level report or dataset\n  (Do not send both.)\n\n- **Required\
+    \ query parameters:**\n  - type: the report you want to generate or dataset to download\n  - filename:\
+    \ the output file name (e.g., report.csv)\n\n- **How it works:**\n  - When you trigger the API for\
+    \ the first time, the API returns 202 (in progress).\n  - **You must call the same endpoint again\
+    \ with the exact same query parameters** to check the status. Repeat the request every 2-5 seconds\
+    \ until you receive a 200 response.\n  - When the report is ready for download, the API returns 200\
+    \ and streams the file directly in the response body.\n  - **No separate URL fetch is needed** - the\
+    \ file content is streamed directly when ready (200 response).\n  - The file is automatically saved\
+    \ to the path specified in your curl `-o` flag or your API tool's save location. \n\n- **Supported\
+    \ report types:**\n  **Job-level (use jobId):**\n    - full: All individual judgments\n    - json:\
+    \ JSON report with aggregated and raw judgments\n    - aggregated: Aggregated results (requires request\
+    \ body; see below)\n    - workset: Contributor (Workset) report\n    - source: Original source data\
+    \ uploaded to the job\n    - ai_detector_report_contributor_level\n    - ai_detector_report_unit_level\n\
+    \    - test_question_report_contributor_level\n    - k_alpha_report: Inter-annotator agreement (Krippendorff’s\
+    \ alpha)\n    - contributor_scores_report: Contributor Scores Report\n\n  **Project-level (use projectId):**\n\
+    \    - job_daily_report_project_level\n    - contributor_report_project_level\n    - source_report_project_level\n\
+    \    - json_report_project_level\n\n  **Dataset Download (use projectId):**\n    - DATA_SET: Unit\
+    \ View dataset with customizable unit selection and column filtering\n    - JUDGMENT_DATA_SET: Judgment\
+    \ View dataset with customizable unit selection and column filtering\n    - Supports filtering by\
+    \ unit IDs and column selection\n    - Optional filter support with filterName and userId/akonId parameters\n\
+    \n- **Aggregated reports (type=aggregated, Job-level only):**\n  - Provide a request body with aggregation\
+    \ rules for every judgment column:\n    judgmentColumnAggregation: [\n      { judgmentColumn, aggregationAlgorithm,\
+    \ parameter? }\n    ]\n  - aggregationAlgorithm must be one of:\n    - AGG (Best Answer)\n    - AGG_X\
+    \ (Top # Answers) → requires parameter.numberOfAnswers\n    - CAGG_X (Confidence Score) → requires\
+    \ parameter.minimumConfidence (0–1)\n    - ALL (All Answers)\n    - AVG (Numeric Average)\n  - Example:\
+    \ choose one algorithm per column (e.g., \"_meta\", \"ask_question_here\").\n\n- **File format:**\n\
+    \  - Most types return CSV files; type=json returns a JSON file.\n  - The final file name uses the\
+    \ provided filename parameter.\n\n- **Authentication:**\n  - Authorization: Token token=your-api-key\n\
+    \n- **Responses:**\n  - 200: DONE with downloadableUrl (and Location header)\n  - 202: Report generation\
+    \ in progress\n  - 400/403/404/500: Error with details"
+  humanURL: https://developer.appen.com/open-api.yaml
+  baseURL: https://api.appen.com
+  tags:
+  - Download
+  properties:
+  - type: OpenAPI
+    url: openapi/appen-download-api-openapi.yml
+- aid: appen:appen-internal-contributors-api
+  name: Appen Internal Contributors API
+  description: The Internal Contributors API from Appen — 12 operation(s) for internal contributors.
+  humanURL: https://developer.appen.com/open-api.yaml
+  baseURL: https://api.appen.com
+  tags:
+  - Internal Contributors
+  properties:
+  - type: OpenAPI
+    url: openapi/appen-internal-contributors-api-openapi.yml
+- aid: appen:appen-jobs-api
+  name: Appen Jobs API
+  description: >-
+    Job management operations for creating, configuring, and controlling data annotation workflows.
+
+
+    - **Job Lifecycle Management:**
+      - **Create Jobs**: Initialize new annotation tasks with project association and type specification
+      - **Update Settings**: Modify job configuration, instructions, and workflow parameters
+      - **Launch Jobs**: Activate jobs from DRAFT to RUNNING state for contributor access
+      - **Pause Jobs**: Temporarily halt job execution while preserving progress
+
+    - **Job Types Supported:**
+      - **WORK**: Standard annotation jobs for tasks
+      - **QA**: Quality assurance jobs for reviewing, validating work and providing the feedback.
+
+    - **Job States:**
+      1. **DRAFT**: Initial creation state, configurable but not accessible to contributors
+      2. **RUNNING**: Active state where contributors can work on assignments
+      3. **PAUSED**: Temporarily halted, preserving all progress and judgments
+  humanURL: https://developer.appen.com/open-api.yaml
+  baseURL: https://api.appen.com
+  tags:
+  - Jobs
+  properties:
+  - type: OpenAPI
+    url: openapi/appen-jobs-api-openapi.yml
+- aid: appen:appen-projects-api
+  name: Appen Projects API
+  description: >-
+    Project management operations for organizing and structuring your data annotation workflows.
+
+
+    - **Project Structure:**
+      - Projects serve as containers for organizing related jobs and data
+      - Each project belongs to a specific team and can contain multiple jobs
+      - Projects provide a logical grouping for workflow management
+
+    - **Key Operations:**
+      - **Create Projects**: Initialize new project containers with a name.
+
+    - **Project Components:**
+      - **Jobs**: Individual annotation tasks within a project
+      - **Units**: Data rows uploaded to projects for annotation
+      - **Judgments**: Contributor responses collected on project units
+
+    - **Project Lifecycle:**
+      1. **Creation**: Initialize project with name and description
+      2. **Configuration**: Set up project settings and access controls
+      3. **Population**: Add jobs, upload units, and configure workflows
+      4. **Execution**: Run jobs and collect judgments
+      5. **Analysis**: Generate reports and analyze results
+
+    - **Integration Points:**
+      - **Job Management**: Create and manage jobs within projects
+      - **Data Upload**: Upload units and datasets to projects
+      - **Unit Operations**: List, filter, and manage project units
+      - **Workflow Routing**: Send units between jobs within project
+      - **Reporting**: Generate project/job-level analytics and reports
+  humanURL: https://developer.appen.com/open-api.yaml
+  baseURL: https://api.appen.com
+  tags:
+  - Projects
+  properties:
+  - type: OpenAPI
+    url: openapi/appen-projects-api-openapi.yml
+- aid: appen:appen-route-units-api
+  name: Appen Route Units API
+  description: >-
+    Unit management operations for handling individual data rows and their distribution across jobs.
+
+
+    - **Unit Operations:**
+      - **List Units**: Retrieve and filter units within a project with pagination capabilities
+      - **Send Units to Job**: Route units from projects to specific jobs for annotation work
+      - **Unit Filtering**: Filter units by job status, dataset row type, and other criteria
+      - **Bulk Operations**: Handle multiple units simultaneously for efficient workflow management
+
+    - **Unit Types:**
+      - **Individual Units**: Single data rows ready for annotation
+      - **Unit Groups**: Collections of related units that can be processed together
+      - **Dataset Rows**: Structured data from uploaded CSV files
+
+    - **Key Features:**
+      - **Advanced Filtering**: Filter by job status, dataset type
+      - **Pagination Support**: Handle large datasets with efficient pagination
+      - **Sorting Options**: Customizable sorting for better data organization
+      - **Status Tracking**: Monitor unit status across different job assignments
+
+    - **Unit Lifecycle Management:**
+      1. **Creation**: Units are created when data is uploaded to projects
+      2. **Assignment**: Units are distributed to jobs for contributor work
+      3. **Processing**: Contributors annotate units and submit judgments
+      4. **Routing**: Units can be moved between jobs (e.g., work to QA)
+      5. **Completion**: Units receive required judgments and are marked complete
+  humanURL: https://developer.appen.com/open-api.yaml
+  baseURL: https://api.appen.com
+  tags:
+  - Route Units
+  properties:
+  - type: OpenAPI
+    url: openapi/appen-route-units-api-openapi.yml
+- aid: appen:appen-test-questions-api
+  name: Appen Test Questions API
+  description: >-
+    Test question management operations for evaluating contributor performance and ensuring quality assurance
+    in data annotation workflows.
+
+
+    - **Key Operations:**
+      - **Add Test Questions**: Create new test questions and link them to specific units
+      - **Upload Test Questions**: Bulk upload test questions from CSV files
+      - **Update Test Questions**: Modify existing test questions and its settings
+
+    - **Test Question Features:**
+      - **Enable/Disable**: Control whether test questions are active for contributor evaluation
+      - **Hide/Show**: Manage visibility of test question answers and explanation
+      - **Content Management**: Update question content, answers, and explanations
+      - **Mode Configuration**: Set QUIZ, WORK, or QUIZ+WORK modes for different evaluation types
+      - **Performance Tracking**: Monitor contributor scores metrics
+      - **Calibration**: Ensure consistent annotation quality across different contributors
+
+    - **Authentication:**
+      - Authorization: Token token=your-api-key
+
+    - **Common Responses:**
+      - 200: Success with test question data
+      - 400: Bad request - Invalid parameters or duplicate test questions
+      - 403: Access denied
+      - 404: Project, job, or test question not found
+      - 500: Internal server error
+  humanURL: https://developer.appen.com/open-api.yaml
+  baseURL: https://api.appen.com
+  tags:
+  - Test Questions
+  properties:
+  - type: OpenAPI
+    url: openapi/appen-test-questions-api-openapi.yml
+- aid: appen:appen-upload-api
+  name: Appen Upload API
+  description: >-
+    File upload operations for importing datasets and data into your projects and jobs.
+
+
+    - **Dataset Upload Process:**
+      - **Upload Files**: Send CSV files containing your data to existing projects
+      - **Status Monitoring**: Track upload progress and completion status
+      - **File Validation**: Automatic validation of CSV format, headers, and content
+
+    - **Supported File Formats:**
+      - **CSV Files**: Primary format for data import
+      - **Encoding**: UTF-8 encoding recommended
+      - **Headers**: Required column headers for data organization
+      - **Data Types**: Text, numeric, date, and structured data support
+
+    - **Upload Workflow:**
+      1. **File Preparation**: Ensure CSV format with proper headers
+      2. **Upload Initiation**: Send file to project with metadata
+      3. **Processing**: System validates and processes the data
+      4. **Status Polling**: Monitor status until completion
+      5. **Data Integration**: Units become available for job assignments
+
+    - **Key Features:**
+      - **Batch Processing**: Handle large datasets efficiently
+      - **Progress Tracking**: Real-time upload status monitoring
+      - **Error Handling**: Detailed validation error messages
+      - **File Management**: Track uploaded files and their metadata
+
+    - **Integration Points:**
+      - **Project Association**: Uploads are linked to specific projects
+      - **Unit Creation**: Each row becomes a unit for annotation
+      - **Job Routing**: Units can be sent to jobs for contributor work
+  humanURL: https://developer.appen.com/open-api.yaml
+  baseURL: https://api.appen.com
+  tags:
+  - Upload
+  properties:
+  - type: OpenAPI
+    url: openapi/appen-upload-api-openapi.yml
+x-enrichment:
+  date: '2026-09-22'
+  status: enriched
+  artifacts_added: 20
+  pass: modular-v1
+  engine: identity=local,contract=local,surfaces=local,docs=local

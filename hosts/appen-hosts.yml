@@ -1,0 +1,119 @@
+generated: '2026-09-22'
+method: derived
+source: the pre-flight dossier, apis.yml pointers, spec servers, well-known, vendors -- nothing fetched here
+generator: derive-hosts.py
+summary:
+  hosts: 8
+  own: 7
+  other_domain: 0
+  platform: 1
+  roles:
+  - api
+  - marketing
+  - other
+  - portal
+  - source
+  - status
+  - website
+hosts:
+- host: api.appen.com
+  found_by:
+  - apis[]
+  - contract-discovery
+  types: []
+  serves:
+  - api
+  registrable_domain: appen.com
+  role: api
+  relation: own
+- host: appen.com
+  found_by:
+  - pointer
+  - probed
+  - contract-discovery
+  - well-known
+  - vendor-detect
+  types:
+  - Website
+  serves:
+  - cdn
+  vendor: cloudflare
+  registrable_domain: appen.com
+  role: website
+  relation: own
+- host: developer.appen.com
+  found_by:
+  - pointer
+  - apis[]
+  - probed
+  - site-links
+  - docs-index
+  - spec-found
+  - contract-discovery
+  - well-known
+  - vendor-detect
+  types:
+  - DeveloperPortal
+  - Documentation
+  - APIReference
+  serves:
+  - docs
+  - spec
+  - cdn
+  vendor: cloudfront
+  registrable_domain: appen.com
+  role: portal
+  relation: own
+- host: github.com
+  found_by:
+  - pointer
+  types:
+  - GitHubOrganization
+  serves: []
+  registrable_domain: github.com
+  role: source
+  relation: platform
+- host: status.appen.com
+  found_by:
+  - pointer
+  - probed
+  - site-links
+  - contract-discovery
+  - well-known
+  types:
+  - StatusPage
+  serves: []
+  registrable_domain: appen.com
+  role: status
+  relation: own
+- host: success.appen.com
+  found_by:
+  - probed
+  - site-links
+  - contract-discovery
+  - well-known
+  types: []
+  serves: []
+  registrable_domain: appen.com
+  role: other
+  relation: own
+- host: trust.appen.com
+  found_by:
+  - probed
+  - site-links
+  - well-known
+  types: []
+  serves: []
+  registrable_domain: appen.com
+  role: other
+  relation: own
+- host: www.appen.com
+  found_by:
+  - pointer
+  types:
+  - Blog
+  - PrivacyPolicy
+  serves: []
+  registrable_domain: appen.com
+  role: marketing
+  relation: own

@@ -1,0 +1,1030 @@
+openapi: 3.2.0
+info:
+  title: Appen AI Data Annotation Platform (ADAP) Projects API
+  description: '# Introduction
+
+
+    The Appen AI Data Annotation Platform (ADAP) APIs offer a structured, automated approach to ensure high-quality data labeling on a scale.'
+servers:
+- url: https://api.appen.com/
+  description: Production environment
+security:
+- TokenAuth: []
+tags:
+- name: Projects
+  description: Project management operations for organizing and structuring your data annotation workflows.
+paths:
+  /v3/project-flow/projects:
+    post:
+      tags:
+      - Projects
+      summary: Create a new project
+      description: 'Creates a new project within a team. Project is a container that organizes and structures your data annotation workflows.
+
+        Projects serve as the foundation for organizing related jobs, units, and data within your team.
+
+        Each project belongs to a specific team and can contain multiple jobs.
+
+        Projects have unique names that help you organize and identify different annotation initiatives.
+
+        Think of a project as a workspace where you can group related annotation tasks, manage data uploads,
+
+        and coordinate quality assurance workflows across multiple jobs.
+
+
+        **Required Parameters:**
+
+        - `teamId`: The unique identifier of the team that will own this project
+
+        - `name`: A unique project name (must not duplicate existing project names in your team)
+
+
+        **Optional Parameters:**
+
+        - `description`: Additional details about the project purpose or scope'
+      operationId: createProject
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Team under which project is made
+        example: f6c0b8cb-de69-495c-980b-2b0e0a6ca288
+      x-codeSamples:
+      - lang: curl
+        label: Create Project
+        source: "curl -X POST \"https://api.appen.com/v3/project-flow/projects?teamId=<teamId>\" \\\n  -H \"Authorization: Token token=<your-api-key>\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"name\": \"Your Project Name\",\n    \"description\": \"Your Project Description (Optional)\"\n  }'\n"
+      responses:
+        '200':
+          description: Project created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          example: b7879688-6fd1-4a83-aba8-540e3e653df8
+                        name:
+                          type: string
+                          example: Your Project Name
+                        displayId:
+                          type: integer
+                          example: 87481
+                        description:
+                          type: string
+                          example: Your Project Description (Optional)
+                        status:
+                          type: string
+                          example: ACTIVE
+                        teamId:
+                          type: string
+                          format: uuid
+                          example: f6c0b8cb-de69-495c-980b-2b0e0a6ca288
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: '2025-07-09T02:08:47Z'
+                        createdBy:
+                          type: string
+                          example: user-123
+                        version:
+                          type: integer
+                          example: 0
+                        projectType:
+                          type: string
+                          example: PROJECT
+                        projectAccessLevel:
+                          type: string
+                          example: TEAM
+              example:
+                message: success
+                code: 200
+                data:
+                  id: b7879688-6fd1-4a83-aba8-540e3e653df8
+                  name: ' before demo jul 9'
+                  displayId: 87481
+                  description: Your Project Description (Optional)
+                  status: ACTIVE
+                  teamId: f6c0b8cb-de69-495c-980b-2b0e0a6ca288
+                  createdAt: '2025-07-09T02:08:47Z'
+                  createdBy: user-123
+                  version: 0
+                  projectType: PROJECT
+                  projectAccessLevel: TEAM
+                traceId: trace-123
+                time: '2025-07-09T02:08:47Z'
+        '400':
+          description: Bad request - Missing required fields or validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missing_required_fields:
+                  summary: Missing required fields
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: Missing required fields
+                    path: /v3/project-flow/projects
+                duplicate_name:
+                  summary: Project name already exists
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: Project name already exists
+                    path: /v3/project-flow/projects
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 403
+                error: Forbidden
+                message: Access denied. You may not have permission to create projects.
+                path: /v3/project-flow/projects
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 500
+                error: Internal Server Error
+                message: Failed to create project
+                path: /v3/project-flow/projects
+      security:
+      - TokenAuth: []
+  /v3/project-flow/projects/copy:
+    post:
+      tags:
+      - Projects
+      summary: Copy project
+      description: 'Copies an existing project into the specified team. The new project name must be provided.
+
+
+        Note:
+
+        - The jobs inside the copied project are expected to be in draft state.
+
+        - The sample configuration in the job canvas is carried over from the origin project and QA quality settings are added by default.
+
+        - Contributor details will not be added to the Jobcrowd of copied project.
+
+
+        Validations applied by the Public API:
+
+        - teamId: The ID must be a valid UUID, desired destination team that must correspond to an existing, accessible team.
+
+        - originId: The ID must be a valid UUID, and the source project (the one being copied) must belong to an existing team that you have access to.
+
+        - datasetType: If omitted or blank, defaults to `NO_ROWS`; only documented enum values are accepted.'
+      operationId: copyProject
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: 'TeamId of the destination team where the copied project will be created (i.e., the team the new project will belong to). The teamId must exist; otherwise the request fails with "invalid teamId" (400).
+
+          '
+        example: f6c0b8cb-de69-495c-980b-2b0e0a6ca288
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - originId
+              - name
+              properties:
+                originId:
+                  type: string
+                  format: uuid
+                  description: ID of the project to copy from (required)
+                  example: 8c3b9c7e-8a6f-4572-8c02-2d0cbf7b87e2
+                name:
+                  type: string
+                  description: Name of the new project (required)
+                  example: Copy of Source Project
+                description:
+                  type: string
+                  description: Description for the new project (optional)
+                  example: Copied from Source Project
+                datasetType:
+                  type: string
+                  description: "Optional dataset type to attach during copy. Defaults to NO_ROWS if omitted or blank.\nAllowed values: TEST_QUESTION, NEW_UNITS, ALL_UNITS, NO_ROWS.\nSemantics:\n  - **TEST_QUESTION**: copy only test question units\n  - **NEW_UNITS**: copy units with no active segments and their related test questions\n  - **ALL_UNITS**: copy all units (including test questions)\n  - **NO_ROWS**: copy project structure only (no data)\n"
+                  enum:
+                  - TEST_QUESTION
+                  - NEW_UNITS
+                  - ALL_UNITS
+                  - NO_ROWS
+                  default: NO_ROWS
+                  example: NO_ROWS
+                isJobSettingCopyRequired:
+                  type: boolean
+                  description: Optional; whether to copy job-level configuration/settings. Defaults to false.
+                  default: false
+                  example: false
+            example:
+              originId: 8c3b9c7e-8a6f-4572-8c02-2d0cbf7b87e2
+              name: Copy of Source Project
+              description: Copied from Source Project
+              datasetType: NO_ROWS
+              isJobSettingCopyRequired: false
+      x-codeSamples:
+      - lang: curl
+        label: Copy project
+        source: "curl --location 'https://api.appen.com/v3/project-flow/projects/copy?teamId=f6c0b8cb-de69-495c-980b-2b0e0a6ca288' \\\n--header 'Authorization: Token token=<your-api-key>' \\\n--header 'Content-Type: application/json' \\\n--data '{\n    \"originId\": \"b7879688-6fd1-4a83-aba8-540e3e653df8\",\n    \"name\": \"Copy of Source Project\",\n    \"description\": \"Copied from Source Project\",\n    \"datasetType\": \"NO_ROWS\",\n    \"isJobSettingCopyRequired\": false\n}'\n"
+      responses:
+        '200':
+          description: Project copied successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          example: b7879688-6fd1-4a83-aba8-540e3e653df8
+                        name:
+                          type: string
+                          example: Copy of Source Project
+                        displayId:
+                          type: integer
+                          example: 87482
+                        description:
+                          type: string
+                          example: Copied from Source Project
+                        status:
+                          type: string
+                          example: ACTIVE
+                        teamId:
+                          type: string
+                          format: uuid
+                          example: f6c0b8cb-de69-495c-980b-2b0e0a6ca288
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: '2025-07-09T02:08:47Z'
+              example:
+                message: success
+                code: 200
+                data:
+                  id: 3a164aa3-e358-49d0-be7a-004c808af558
+                  name: Copy of Source Project
+                  displayId: 92987
+                  description: Copied from Source Project
+                  status: ACTIVE
+                  unitSegmentType: UNIT_ONLY
+                  teamId: f6c0b8cb-de69-495c-980b-2b0e0a6ca288
+                  createdAt: '2025-09-09T09:19:46.902968Z'
+                  createdBy: 225b4107-ca93-41e4-ab25-5f0628c8e518
+                  version: 0
+                  projectType: PROJECT
+                  projectAccessLevel: TEAM
+                traceId: 34ad19e2-6537-4ac7-b0a2-2fdb795c3e19
+                time: '2025-09-09T09:19:46.986401Z'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                origin_required:
+                  summary: originId missing or blank
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: originId is required
+                    path: /v3/project-flow/projects/copy
+                name_required:
+                  summary: name missing or blank
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: name cannot be empty
+                    path: /v3/project-flow/projects/copy
+                dataset_type_invalid:
+                  summary: datasetType invalid
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: 'datasetType invalid: expected one of {TEST_QUESTION, NEW_UNITS, ALL_UNITS, NO_ROWS}'
+                    path: /v3/project-flow/projects/copy
+                teamid_invalid:
+                  summary: teamId invalid
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: Invalid teamId
+                    path: /v3/project-flow/projects/copy
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 403
+                error: Forbidden
+                message: Forbidden
+                path: /v3/project-flow/projects/copy
+        '404':
+          description: Origin project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 404
+                error: Not Found
+                message: origin project not found or inaccessible
+                path: /v3/project-flow/projects/copy
+        '409':
+          description: Name conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 409
+                error: Conflict
+                message: Project name already exists in team
+                path: /v3/project-flow/projects/copy
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 422
+                error: Unprocessable Entity
+                message: 'clone flows failed: <details>'
+                path: /v3/project-flow/projects/copy
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                timestamp: '2025-07-01T10:28:59.893+00:00'
+                status: 500
+                error: Internal Server Error
+                message: Internal Server Error
+                path: /v3/project-flow/projects/copy
+      security:
+      - TokenAuth: []
+  /v3/project-flow/projects/project-status:
+    security:
+    - TokenAuth: []
+    get:
+      tags:
+      - Projects
+      summary: Get project status
+      description: 'Returns project name, description, status and high-level statistics for a given project.
+
+
+        Typical use cases:
+
+        - Display project progress and units submission statistics
+
+        - List active jobs (id, title, state) for the project'
+      operationId: getProjectStatusV3
+      parameters:
+      - name: projectId
+        in: query
+        required: true
+        description: Unique identifier of the project to fetch
+        schema:
+          type: string
+          format: uuid
+      x-codeSamples:
+      - lang: curl
+        label: Get project status cURL
+        source: 'curl --location ''https://api.appen.com/v3/project-flow/projects/project-status?projectId=<PROJECT_ID>'' \
+
+          --header ''Authorization: Token token=<your-api-key>'' \
+
+          --header ''Accept: application/json''
+
+          '
+      responses:
+        '200':
+          description: completed successfully. Response contains the project details.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        projectName:
+                          type: string
+                          description: Name of the project
+                        projectDescription:
+                          type:
+                          - string
+                          - 'null'
+                          description: Description of the project
+                        dataSummaryDTO:
+                          type: object
+                          description: Summary of project data progress and counts
+                          properties:
+                            projectId:
+                              type: string
+                              format: uuid
+                            lastUpdated:
+                              type: string
+                              format: date-time
+                            totalUnits:
+                              type: integer
+                              format: int64
+                            submittedUnits:
+                              type: integer
+                              format: int64
+                            totalUnitGroups:
+                              type: integer
+                              format: int64
+                            submittedUnitGroups:
+                              type: integer
+                              format: int64
+                            totalJudgments:
+                              type: integer
+                              format: int64
+                            unitSummary:
+                              type: object
+                              additionalProperties:
+                                type: integer
+                                format: int64
+                            judgmentSummary:
+                              type: object
+                              additionalProperties:
+                                type: integer
+                                format: int64
+                            audioTranscriptionTotalDuration:
+                              type: number
+                              format: double
+                            submittedPercentage:
+                              type:
+                              - integer
+                              - 'null'
+                        jobInfoDTO:
+                          type: array
+                          description: Basic job information for jobs in the project
+                          items:
+                            type: object
+                            properties:
+                              jobId:
+                                type: string
+                                format: uuid
+                              title:
+                                type: string
+                              state:
+                                type: string
+              examples:
+                success:
+                  summary: Example successful response
+                  value:
+                    message: success
+                    code: 200
+                    data:
+                      projectName: Example Project
+                      projectDescription: This is an example project description
+                      dataSummaryDTO:
+                        projectId: e457bb2f-1f75-46a2-b78a-c994caf06ccd
+                        lastUpdated: '2025-09-11T09:21:49.349811Z'
+                        totalUnits: 70
+                        submittedUnits: 4
+                        totalUnitGroups: 0
+                        submittedUnitGroups: 0
+                        totalJudgments: 9
+                        unitSummary:
+                          NEW: 61
+                          QA_MODIFIED_REJECTED: 0
+                          WORKING: 0
+                          QA_REJECTED: 0
+                          QA_MODIFIED: 0
+                          FEEDBACK_DISPUTED: 0
+                          FINALIZED: 0
+                          QA_ACCEPTED: 0
+                          QA_ACCEPTED_PENDING: 0
+                          JUDGABLE: 5
+                          QA_REJECTED_PENDING: 0
+                          DISPUTE_ACCEPTED: 0
+                          ABANDONED: 0
+                          QA_MODIFIED_ACCEPTED: 0
+                          ASSIGNED: 0
+                          QA_MODIFIED_PENDING: 0
+                          DISPUTE_REJECTED: 0
+                          SUBMITTED: 4
+                        judgmentSummary:
+                          NEW: 0
+                          QA_MODIFIED_REJECTED: 0
+                          WORKING: 0
+                          QA_REJECTED: 2
+                          QA_MODIFIED: 0
+                          FEEDBACK_DISPUTED: 0
+                          FINALIZED: 0
+                          QA_ACCEPTED: 0
+                          QA_ACCEPTED_PENDING: 0
+                          JUDGABLE: 5
+                          QA_REJECTED_PENDING: 0
+                          DISPUTE_ACCEPTED: 0
+                          ABANDONED: 0
+                          QA_MODIFIED_ACCEPTED: 2
+                          ASSIGNED: 0
+                          QA_MODIFIED_PENDING: 0
+                          DISPUTE_REJECTED: 0
+                          SUBMITTED: 0
+                        audioTranscriptionTotalDuration: 0.0
+                        submittedPercentage: 44
+                      jobInfoDTO:
+                      - jobId: 99264400-4202-4508-9d89-68b155b1a2ad
+                        title: qa2
+                        state: RUNNING
+                      - jobId: 0d41ee42-8deb-493c-92ae-4c70f88ce89f
+                        title: w2 RESOLUTION
+                        state: RUNNING
+                      - jobId: b9ff1af4-b56d-4be6-b347-4f0341ecf426
+                        title: w2
+                        state: RUNNING
+                      - jobId: 7dfbccf6-375e-4760-b4ae-5d8ebeef142e
+                        title: qa
+                        state: RUNNING
+                      - jobId: 2f826eb0-d0d5-4f7b-be87-f5ba58c8b89b
+                        title: job RESOLUTION
+                        state: PAUSED
+                      - jobId: 5fd10538-c290-4c4b-81ad-a8a32133f46c
+                        title: job
+                        state: PAUSED
+        '400':
+          description: Bad request - Missing or invalid projectId, or project does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalid_project:
+                  summary: Project missing or invalid
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    error: Bad Request
+                    message: Project with ID '...' does not exist. Please create the project first.
+                    path: /v3/project-flow/projects/project-status
+        '401':
+          description: Unauthorized. Authentication of the user failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                unauthorized:
+                  summary: Missing or invalid credentials
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 401
+                    error: Unauthorized
+                    message: Invalid API token
+                    path: /v3/project-flow/projects/project-status
+        '403':
+          description: Forbidden. Check user has permission to do project operations.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                forbidden:
+                  summary: Insufficient permissions
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 403
+                    error: Forbidden
+                    message: 'User does not have required scope: team#project#read'
+                    path: /v3/project-flow/projects/project-status
+        '404':
+          description: Project not found when deriving teamId
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                not_found:
+                  summary: Project team not derivable
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 404
+                    error: Not Found
+                    message: 'Project not found: could not extract teamId'
+                    path: /v3/project-flow/projects/project-status
+        '422':
+          description: error when processing the request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                processing_error:
+                  summary: Error when processing the request
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 422
+                    error: Unprocessable Entity
+                    message: Unable to compute project status due to downstream service error
+                    path: /v3/project-flow/projects/project-status
+  /v3/project-flow/projects/update-project-settings:
+    put:
+      tags:
+      - Projects
+      summary: Update project settings
+      description: 'Updates project name and/or description for a given project.
+
+
+        **Features:**
+
+        - Update project name (1-255 characters)
+
+        - Update project description (up to 500 characters, can be empty to clear)
+
+        - Both name and description can be updated in a single API request
+
+        - At least one field (name or description) must be provided in the API request
+
+
+        **Validation:**
+
+        - Project ID is required
+
+        - Name must be 1-255 characters if provided
+
+        - Description must not exceed 500 characters if provided
+
+        - Description can be empty string to clear existing description'
+      operationId: updateProjectSettingsV3
+      parameters:
+      - name: teamId
+        in: query
+        required: true
+        description: Unique identifier of the team that owns the project
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - projectId
+              properties:
+                projectId:
+                  type: string
+                  format: uuid
+                  description: Unique identifier of the project to update
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  description: New project name (optional, but at least one of name or description must be provided)
+                description:
+                  type: string
+                  maxLength: 500
+                  description: New project description (optional, can be empty string to clear, but at least one of name or description must be provided)
+      x-codeSamples:
+      - lang: curl
+        label: Update both project name and description cURL
+        source: "curl -X PUT 'https://api.appen.com/v3/project-flow/projects/update-project-settings?teamId=<TEAM_ID>' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"projectId\": \"<PROJECT_ID>\",\n  \"name\": \"Updated Project Name\",\n  \"description\": \"Updated project description\"\n}'\n"
+      - lang: curl
+        label: Update name only cURL
+        source: "curl -X PUT 'https://api.appen.com/v3/project-flow/projects/update-project-settings?teamId=<TEAM_ID>' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"projectId\": \"<PROJECT_ID>\",\n  \"name\": \"Updated Project Name\"\n}'\n"
+      - lang: curl
+        label: Update description only cURL
+        source: "curl -X PUT 'https://api.appen.com/v3/project-flow/projects/update-project-settings?teamId=<TEAM_ID>' \\\n-H 'Content-Type: application/json' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-d '{\n  \"projectId\": \"<PROJECT_ID>\",\n  \"description\": \"Updated project description\"\n}'\n"
+      responses:
+        '200':
+          description: Project settings updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          description: Project identifier
+                        projectName:
+                          type: string
+                          description: Updated project name
+                        projectDescription:
+                          type: string
+                          description: Updated project description (may be empty string)
+                        displayId:
+                          type: integer
+                          format: int64
+                          description: Display ID of the project
+                        teamId:
+                          type: string
+                          format: uuid
+                          description: Team identifier
+                        version:
+                          type: integer
+                          description: Version number of the project
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: Creation timestamp
+                        createdBy:
+                          type: string
+                          description: User ID who created the project
+                        projectType:
+                          type: string
+                          description: Type of the project
+              examples:
+                success_both_updated:
+                  summary: Both name and description updated
+                  value:
+                    message: Project name and description have been updated successfully
+                    code: 200
+                    data:
+                      id: e457bb2f-1f75-46a2-b78a-c994caf06ccd
+                      projectName: Updated Project Name
+                      projectDescription: Updated project description
+                      displayId: 101349
+                      teamId: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      version: 2
+                      createdAt: '2025-12-22T10:59:28.913994Z'
+                      createdBy: user-123
+                      projectType: PROJECT
+                success_name_only:
+                  summary: Only name updated
+                  value:
+                    message: Project name has been updated successfully
+                    code: 200
+                    data:
+                      id: e457bb2f-1f75-46a2-b78a-c994caf06ccd
+                      projectName: Updated Project Name
+                      projectDescription: Original description
+                      displayId: 101349
+                      teamId: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      version: 2
+                      createdAt: '2025-12-22T10:59:28.913994Z'
+                      createdBy: user-123
+                      projectType: PROJECT
+                success_description_only:
+                  summary: Only description updated
+                  value:
+                    message: Project description has been updated successfully
+                    code: 200
+                    data:
+                      id: e457bb2f-1f75-46a2-b78a-c994caf06ccd
+                      projectName: Original Project Name
+                      projectDescription: Updated project description
+                      displayId: 101349
+                      teamId: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      version: 2
+                      createdAt: '2025-12-22T10:59:28.913994Z'
+                      createdBy: user-123
+                      projectType: PROJECT
+                success_no_changes:
+                  summary: No changes detected
+                  value:
+                    message: No changes detected. Project settings remain unchanged.
+                    code: 200
+                    data:
+                      id: e457bb2f-1f75-46a2-b78a-c994caf06ccd
+                      projectName: Existing Project Name
+                      projectDescription: Existing description
+                      displayId: 101349
+                      teamId: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      version: 1
+                      createdAt: '2025-12-22T10:59:28.913994Z'
+                      createdBy: user-123
+                      projectType: PROJECT
+        '400':
+          description: Bad request - validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                no_fields_provided:
+                  summary: No fields provided
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    errorCode: 2200
+                    error: Bad Request
+                    message: At least one field (name or description) must be provided
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                    path: /v3/project-flow/projects/update-project-settings
+                name_length_invalid:
+                  summary: Invalid name length
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    errorCode: 2204
+                    error: Bad Request
+                    message: Project name must contain at least 1 character and cannot exceed 255 characters
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                    path: /v3/project-flow/projects/update-project-settings
+                description_length_invalid:
+                  summary: Invalid description length
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 400
+                    errorCode: 2205
+                    error: Bad Request
+                    message: Project description cannot exceed 500 characters
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                    path: /v3/project-flow/projects/update-project-settings
+        '403':
+          description: Forbidden - insufficient permissions or team ID mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                forbidden:
+                  summary: Insufficient permissions
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 403
+                    errorCode: 2206
+                    error: Forbidden
+                    message: Project does not belong to the specified team
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                    path: /v3/project-flow/projects/update-project-settings
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                project_not_found:
+                  summary: Project not found
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 404
+                    errorCode: 2201
+                    error: Not Found
+                    message: Project with ID 'e457bb2f-1f75-46a2-b78a-c994caf06ccd' does not exist
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                    path: /v3/project-flow/projects/update-project-settings
+        '409':
+          description: Conflict - duplicate project name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                duplicate_name:
+                  summary: Duplicate project name
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 409
+                    errorCode: 2208
+                    error: Conflict
+                    message: Project name already exists in team
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                    path: /v3/project-flow/projects/update-project-settings
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                internal_error:
+                  summary: Internal server error
+                  value:
+                    timestamp: '2025-07-01T10:28:59.893+00:00'
+                    status: 500
+                    errorCode: 2203
+                    error: Internal Server Error
+                    message: An unexpected error occurred while updating project settings
+                    traceId: 123e4567-e89b-12d3-a456-426614174000
+                    path: /v3/project-flow/projects/update-project-settings
+      security:
+      - TokenAuth: []
+components:
+  schemas:
+    Response:
+      type: object
+      required:
+      - message
+      - code
+      - data
+      - time
+      properties:
+        message:
+          type: string
+          description: Response message
+          example: success
+        code:
+          type: integer
+          description: HTTP status code
+          example: 200
+        data:
+          description: Response data (type varies by endpoint)
+        traceId:
+          type:
+          - string
+          - 'null'
+          description: Request trace identifier for debugging
+          example: null
+        time:
+          type: string
+          format: date-time
+          description: Response timestamp
+          example: '2025-07-02T10:02:04.813876Z'
+    Error:
+      type: object
+      required:
+      - timestamp
+      - status
+      - error
+      - message
+      - path
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the error occurred
+        status:
+          type: integer
+          description: HTTP status code
+        error:
+          type: string
+          description: HTTP status text
+        message:
+          type: string
+          description: Human-readable error message
+        path:
+          type: string
+          description: API endpoint path that generated the error
+        trace:
+          type: string
+          description: Stack trace (only in development)
+      example:
+        timestamp: '2025-07-01T10:28:59.893+00:00'
+        status: 500
+        error: Internal Server Error
+        message: Failed to update job
+        path: /publicapi/work-service/jobs
+  securitySchemes:
+    TokenAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+      description: 'API Token authentication. Pass your API token in the Authorization header:
+
+        `Authorization: Token token=your-api-token-here`
+
+        '

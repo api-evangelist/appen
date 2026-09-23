@@ -1,0 +1,174 @@
+generated: '2026-09-22'
+method: derived
+generator: derive-mcp-candidate.py
+source:
+- openapi/appen-openapi-remote.yaml
+status: candidate
+deployment:
+  mode: none
+  auth: unknown
+  verified: probed
+note: 'No MCP server was found. The pre-flight posted tools/list to /mcp on api.appen.com, appen.com, developer.appen.com, status.appen.com; verdict
+  opaque (https://api.appen.com/mcp answered 401: the edge authenticates before it routes, which proves nothing either way). Candidate tools below
+  are derived from the 32 operation(s) in the provider''s own OpenAPI (32 listed); they describe what a server WOULD expose, not one that exists.'
+tools:
+- name: create_job
+  operationId: createJob
+  method: POST
+  path: /v3/jobs/jobs.json
+  description: Create a new job
+- name: copy_job
+  operationId: copyJob
+  method: POST
+  path: /v3/project-flow/projects/jobs/copy-job
+  description: Copy an existing job within a project
+- name: get_job_status
+  operationId: getJobStatus
+  method: GET
+  path: /v3/project-flow/projects/jobs/status
+  description: Get job status
+- name: update_job
+  operationId: updateJob
+  method: PUT
+  path: /v3/jobs/update
+  description: Update job settings
+- name: get_job_status_by_id
+  operationId: getJobStatusById
+  method: GET
+  path: /v3/jobs/jobStatusById
+  description: Get job settings
+- name: pause_job
+  operationId: pauseJob
+  method: POST
+  path: /v3/jobs/pause
+  description: Pause job
+- name: upload_dataset_to_project
+  operationId: uploadDatasetToProject
+  method: POST
+  path: /v3/jobs/upload.json
+  description: Upload unit data to an existing project
+- name: get_upload_status
+  operationId: getUploadStatus
+  method: GET
+  path: /v3/jobs/upload/status
+  description: Get the status of an uploaded file/dataset
+- name: create_project
+  operationId: createProject
+  method: POST
+  path: /v3/project-flow/projects
+  description: Create a new project
+- name: list_project_units
+  operationId: listProjectUnits
+  method: POST
+  path: /v3/project-flow/projects/units
+  description: List units in a project
+- name: copy_project
+  operationId: copyProject
+  method: POST
+  path: /v3/project-flow/projects/copy
+  description: Copy project
+- name: send_units_to_job
+  operationId: sendUnitsToJob
+  method: POST
+  path: /v3/project-flow/projects/send-to-job
+  description: Send units to job
+- name: launch_job
+  operationId: launchJob
+  method: POST
+  path: /v3/jobs/launch
+  description: Launch & Resume/Run job
+- name: download_csv_file
+  operationId: downloadCsvFile
+  method: POST
+  path: /v3/jobs/download.csv
+  description: Download a job-level/project-level report.
+- name: download_dataset_csv_file
+  operationId: downloadDatasetCsvFile
+  method: POST
+  path: /v3/jobs/dataset-download.csv
+  description: Download dataset from a project.
+- name: add_test_questions_to_job
+  operationId: addTestQuestionsToJob
+  method: POST
+  path: /v3/project-flow/projects/add-test-question
+  description: Add Test Questions
+- name: upload_test_questions
+  operationId: uploadTestQuestions
+  method: POST
+  path: /v3/project-flow/projects/upload-test-question
+  description: Upload Test Questions
+- name: update_test_questions
+  operationId: updateTestQuestions
+  method: POST
+  path: /v3/project-flow/projects/update-tq-by-project
+  description: Update Test Questions
+- name: get_project_status_v3
+  operationId: getProjectStatusV3
+  method: GET
+  path: /v3/project-flow/projects/project-status
+  description: Get project status
+- name: update_project_settings_v3
+  operationId: updateProjectSettingsV3
+  method: PUT
+  path: /v3/project-flow/projects/update-project-settings
+  description: Update project settings
+- name: create_internalcontributor_add-contributor
+  operationId: POST /v3/project-flow/projects/internalcontributor/add-contributor
+  method: POST
+  path: /v3/project-flow/projects/internalcontributor/add-contributor
+  description: Add contributor to a team
+- name: create_internalcontributor_upload
+  operationId: POST /v3/project-flow/projects/contributor/internalcontributor/upload
+  method: POST
+  path: /v3/project-flow/projects/contributor/internalcontributor/upload
+  description: Upload internal contributors to a team
+- name: update_internalcontributor_edit-contributor
+  operationId: PUT /v3/project-flow/projects/internalcontributor/edit-contributor
+  method: PUT
+  path: /v3/project-flow/projects/internalcontributor/edit-contributor
+  description: Update contributor details
+- name: create_internalcontributor_list
+  operationId: POST /v3/project-flow/projects/internalcontributor/list
+  method: POST
+  path: /v3/project-flow/projects/internalcontributor/list
+  description: List internal contributors
+- name: create_internalcontributor_create-contributor-group
+  operationId: POST /v3/project-flow/projects/internalcontributor/create-contributor-group
+  method: POST
+  path: /v3/project-flow/projects/internalcontributor/create-contributor-group
+  description: Create a new contributor group
+- name: create_internalcontributor_add-contributors-to-existing-grou
+  operationId: POST /v3/project-flow/projects/internalcontributor/add-contributors-to-existing-group
+  method: POST
+  path: /v3/project-flow/projects/internalcontributor/add-contributors-to-existing-group
+  description: Add contributors to existing contributor group
+- name: create_internalcontributor_list-all-contributor-groups
+  operationId: POST /v3/project-flow/projects/internalcontributor/list-all-contributor-groups
+  method: POST
+  path: /v3/project-flow/projects/internalcontributor/list-all-contributor-groups
+  description: List all contributor groups
+- name: create_internalcontributor_assign-job
+  operationId: POST /v3/project-flow/projects/internalcontributor/assign-job
+  method: POST
+  path: /v3/project-flow/projects/internalcontributor/assign-job
+  description: Assign contributors to a job
+- name: create_internalcontributor_un-assign-job
+  operationId: POST /v3/project-flow/projects/internalcontributor/un-assign-job
+  method: POST
+  path: /v3/project-flow/projects/internalcontributor/un-assign-job
+  description: Unassign contributors from a job
+- name: delete_internalcontributor_delete-contributor
+  operationId: DELETE /v3/project-flow/projects/internalcontributor/delete-contributor
+  method: DELETE
+  path: /v3/project-flow/projects/internalcontributor/delete-contributor
+  description: Delete internal contributors
+- name: delete_internalcontributor_delete-contributor-group
+  operationId: DELETE /v3/project-flow/projects/internalcontributor/delete-contributor-group
+  method: DELETE
+  path: /v3/project-flow/projects/internalcontributor/delete-contributor-group
+  description: Delete internal contributor groups
+- name: create_internalcontributor_download-contributors
+  operationId: POST /v3/project-flow/projects/internalcontributor/download-contributors
+  method: POST
+  path: /v3/project-flow/projects/internalcontributor/download-contributors
+  description: Download contributors from a team as CSV

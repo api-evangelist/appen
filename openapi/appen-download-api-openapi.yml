@@ -1,0 +1,871 @@
+openapi: 3.2.0
+info:
+  title: Appen AI Data Annotation Platform (ADAP) Download API
+  description: '# Introduction
+
+
+    The Appen AI Data Annotation Platform (ADAP) APIs offer a structured, automated approach to ensure high-quality data labeling on a scale.'
+servers:
+- url: https://api.appen.com/
+  description: Production environment
+security:
+- TokenAuth: []
+tags:
+- name: Download
+  description: Generate and download reports for either a single job or an entire project, and download datasets from projects.
+paths:
+  /v3/jobs/download.csv:
+    post:
+      tags:
+      - Download
+      summary: Download a job-level/project-level report
+      description: '**Download a report from a job/project.**
+
+
+        - **Job-level reports**: Use `jobId` parameter to download reports for a specific job.
+
+        - **Project-level reports**: Use `projectId` parameter to download reports for an entire project.
+
+        - **Aggregated reports**: Use request body to specify aggregation settings.
+
+
+        - **Either `jobId` or `projectId` must be provided, but not both.**
+
+
+        **Response Behavior:**
+
+        - **202 Response**: Report download is in progress. **You must call this same endpoint again with the exact same query parameters** (`type`, `filename`, `jobId` or `projectId`) to check the status. Repeat the request every 2-5 seconds until you receive a 200 response.
+
+        - **200 Response**: Report is ready and is downloaded to the path where the curl is executed. The file content is streamed directly in the response body. **No separate URL fetch is needed** - the file is streamed directly when ready.
+
+
+        **Note**:
+
+        - **curl users**: Files are automatically saved using the `-o` flag
+
+        - **Postman/API tool users**: Need to use the "Save response to file" option like below'
+      operationId: downloadCsvFile
+      parameters:
+      - name: jobId
+        in: query
+        required: false
+        description: 'The unique identifier of the job to download the report for.
+
+
+          **This ''jobId'' parameter must be only used when downloading Job Level Reports**
+
+          '
+        schema:
+          type: string
+          example: a7b1e93f-ce11-462b-bd8f-259ad6966609
+      - name: projectId
+        in: query
+        required: false
+        description: 'The unique identifier of the project to download the report for.
+
+
+          **This ''projectId'' parameter must be only used when downloading Project Level Reports**
+
+          '
+        schema:
+          type: string
+          example: 2913c9d4-f894-4900-9313-947f2dbc63e9
+      - name: type
+        in: query
+        required: true
+        description: 'Specifies the type of report to generate or download. Valid values include:
+
+
+
+          **Job-level report types:**
+
+          - **full** – Returns the Full report containing every judgment.
+
+          - **json** – Returns the JSON report containing both aggregated responses and individual judgments.
+
+          - **aggregated** – Returns the Aggregated report with custom aggregation settings (requires request body).
+
+          - **workset** – Returns the Contributor (Workset) report.
+
+          - **source** – Returns a CSV of the source data uploaded to the job.
+
+          - **ai_detector_report_contributor_level** - Returns an AI Detector Report at Contributor Level
+
+          - **ai_detector_report_unit_level** - Returns an AI Detector Report at Unit Level
+
+          - **test_question_report_contributor_level** - Returns Test Question Report at Contributor Level
+
+          - **gold_report** - Returns Test Question Report with selected or all units
+
+          - **k_alpha_report** - Returns Inter Annotator Agreement (K - Alpha) Report
+
+          - **contributor_scores_report** - Returns the Contributor Scores Report.
+
+
+          ** **
+
+
+          **Project-level report types:**
+
+          - **job_daily_report_project_level** – Returns the Job Daily report for the entire project
+
+          - **contributor_report_project_level** – Returns the Contributor report for the entire project
+
+          - **source_report_project_level** – Returns the Source report for the entire project
+
+          - **json_report_project_level** – Returns the JSON report for the entire project
+
+          '
+        schema:
+          type: string
+      - name: filename
+        in: query
+        required: true
+        description: The name of the output file you would like to specify
+        schema:
+          type: string
+          example: report.csv
+      requestBody:
+        required: false
+        description: "Request body settings for different report types.\n\n**For `type=aggregated`**: Aggregated results settings that allow you to specify how multiple contributors judgments will be summarized in the aggregated report of a job.\n\n**For `type=gold_report`**: Test question report settings that allow you to specify which units to include in the test question report.\n\n\n**\U0001F4CB Required Configuration:**\nYou MUST select one aggregation algorithm for EACH judgment column in the request body. For example:\n- Select one algorithm for `_meta` column\n- Select one algorithm for `ask_question_here` column\n\n**Available Algorithms:**\n- **AGG** (Best Answer) \n- **AGG_X** (Top # Answers) \n- **CAGG_X** (Confidence Score)\n- **ALL** (All Answers)\n- **AVG** (Numeric Average) \n\n**⚠️ Parameter Requirements:**\n- If you select **AGG_X**, you MUST specify `numberOfAnswers` parameter\n- If you select **CAGG_X**, you MUST specify `minimumConfidence` parameter. **minimumConfidence** value should range between 0 and 1.\n- For **AGG**, **ALL**, and **AVG**, no parameters are needed\n"
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+                description: Request body for aggregated reports (type=aggregated)
+                properties:
+                  judgmentColumnAggregation:
+                    type: array
+                    description: Array of aggregation settings for each judgment column. You MUST include ALL judgment columns in the request body, each with its own aggregation algorithm.
+                    items:
+                      type: object
+                      required:
+                      - judgmentColumn
+                      - aggregationAlgorithm
+                      properties:
+                        judgmentColumn:
+                          type: string
+                          description: The name of the judgment column to aggregate. Must be one of the judgment columns from your job (e.g., "_meta", "ask_question_here")
+                          example: _meta
+                        aggregationAlgorithm:
+                          type: string
+                          description: The aggregation algorithm to use for this column
+                          enum:
+                          - AGG
+                          - AGG_X
+                          - CAGG_X
+                          - ALL
+                          - AVG
+                          example: AGG
+                        parameter:
+                          type: object
+                          description: Parameters for the aggregation algorithm (**REQUIRED for AGG_X and CAGG_X, NOT NEEDED for AGG, ALL, AVG**)
+                          properties:
+                            numberOfAnswers:
+                              type: string
+                              description: '**REQUIRED for AGG_X**: Number of top answers to include (positive integer)
+
+                                '
+                              example: '5'
+                            minimumConfidence:
+                              type: string
+                              description: '**REQUIRED for CAGG_X**: Minimum confidence threshold between 0.0 and 1.0
+
+                                '
+                              example: '0.8'
+                          example:
+                            numberOfAnswers: '5'
+              - type: object
+                description: Request body for test question reports (type=gold_report)
+                properties:
+                  addTestQuestionVO:
+                    type: array
+                    description: Array of test question units to include in the report. Required when `type=gold_report`. Use empty array `[]` to include all units.
+                    items:
+                      type: object
+                      required:
+                      - unitId
+                      - unitDisplayId
+                      properties:
+                        unitId:
+                          type: string
+                          description: The unique identifier of the unit
+                          example: abcb4175-843d-4db2-a596-61e39e60d1cc
+                        unitDisplayId:
+                          type: string
+                          description: The display identifier of the unit
+                          example: '1_1'
+              example:
+                judgmentColumnAggregation:
+                - judgmentColumn: _meta
+                  aggregationAlgorithm: AGG
+                - judgmentColumn: ask_question_here
+                  aggregationAlgorithm: AGG_X
+                  parameter:
+                    numberOfAnswers: '5'
+      x-codeSamples:
+      - lang: curl cURL
+        label: Job-level Report cURL
+        source: 'curl -L -X POST ''https://api.appen.com/v3/jobs/download.csv?type=full&filename=<file_name>&jobId=<job_id>'' \
+
+          -H ''Authorization: Token token=<your-api-key>'' \
+
+          -o <file_name_for_download>.zip \
+
+          -w "\n\n===== RESPONSE INFO =====\nHTTP Status: %{http_code}\nContent-Type: %{content_type}\nSize: %{size_download} bytes\n========================\n"
+
+          '
+      - lang: curl
+        label: Project-level Report cURL
+        source: 'curl -L -X POST ''https://api.appen.com/v3/jobs/download.csv?type=job_daily_report_project_level&filename=<file_name>>&projectId=<project_id>'' \
+
+          -H ''Authorization: Token token=<your-api-key>'' \
+
+          -o <file_name_for_download>.zip \
+
+          -w "\n\n===== RESPONSE INFO =====\nHTTP Status: %{http_code}\nContent-Type: %{content_type}\nSize: %{size_download} bytes\n========================\n"
+
+          '
+      - lang: curl
+        label: Aggregated Job-Level Report - Confidence Score and Top Answers cURL
+        source: "curl -L -X POST 'https://api.appen.com/v3/jobs/download.csv?type=aggregated&filename=<file_name>&jobId=<job_id>' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-H 'Content-Type: application/json' \\\n-d '{\n  \"judgmentColumnAggregation\": [\n    {\n      \"judgmentColumn\": \"_meta\",\n      \"aggregationAlgorithm\": \"AGG_X\",\n      \"parameter\": {\"numberOfAnswers\": \"5\"}\n    },\n    {\n      \"judgmentColumn\": \"ask_question_here\",\n      \"aggregationAlgorithm\": \"CAGG_X\",\n      \"parameter\": {\"minimumConfidence\": \"0.5\"}\n    }\n  ]\n}' \\\n-o <file_name_for_download>.zip \\\n-w \"\\n\\n===== RESPONSE INFO =====\\nHTTP Status: %{http_code}\\nContent-Type: %{content_type}\\nSize: %{size_download} bytes\\n========================\\n\"\n"
+      - lang: curl
+        label: Aggregated Job-Level Report - Best Answer and Confidence Score cURL
+        source: "curl -L -X POST 'https://api.appen.com/v3/jobs/download.csv?type=aggregated&filename=<file_name>&jobId=<job_id>' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-H 'Content-Type: application/json' \\\n-d '{\n  \"judgmentColumnAggregation\": [\n    {\n      \"judgmentColumn\": \"_meta\",\n      \"aggregationAlgorithm\": \"AGG\"\n    },\n    {\n      \"judgmentColumn\": \"ask_question_here\",\n      \"aggregationAlgorithm\": \"CAGG_X\",\n      \"parameter\": {\"minimumConfidence\": \"0.5\"}\n    }\n  ]\n}' \\\n-o <file_name_for_download>.zip \\\n-w \"\\n\\n===== RESPONSE INFO =====\\nHTTP Status: %{http_code}\\nContent-Type: %{content_type}\\nSize: %{size_download} bytes\\n========================\\n\"\n"
+      - lang: curl
+        label: Download Gold Report with Selected Units cURL
+        source: "curl -L -X POST 'https://api.appen.com/v3/jobs/download.csv?type=gold_report&filename=gold_report.csv&jobId=<jobId>' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-H 'Content-Type: application/json' \\\n-d '{\n  \"addTestQuestionVO\": [\n      {\n   \"unitId\": \"2ceaf41e-2830-4bae-8776-fa5bfce66462\",\n   \"unitDisplayId\": \"1_1\"\n    }\n    ]\n    }'\n"
+      - lang: curl
+        label: Download Gold Report with All Units cURL
+        source: 'curl -L -X POST ''https://api.appen.com/v3/jobs/download.csv?type=gold_report&filename=gold_report.csv&jobId=<jobId>'' \
+
+          -H ''Authorization: Token token=<your-api-key>'' \
+
+          -H ''Content-Type: application/json'' \
+
+          -d ''{
+
+          "addTestQuestionVO":[]
+
+          }''
+
+          '
+      responses:
+        '200':
+          description: Download completed and URL available for download
+          headers:
+            Location:
+              description: Direct URL to download the completed report
+              schema:
+                type: string
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Curl transfer statistics and response information output
+              example: "% Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                 Dload  Upload   Total   Spent    Left  Speed\n100 19887    0 19866  100    21   7139      7  0:00:03  0:00:02  0:00:01  7145\n\n\n===== RESPONSE INFO =====\nHTTP Status: 200\nContent-Type: application/zip\nSize: 19866 bytes\n========================\n"
+        '202':
+          description: Download is in progress
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Curl transfer statistics and response information output
+              example: "% Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                 Dload  Upload   Total   Spent    Left  Speed\n100   230    0   209  100    21    119     12  0:00:01  0:00:01 --:--:--   131\n\n\n===== RESPONSE INFO =====\nHTTP Status: 202\nContent-Type: application/json\nSize: 209 bytes\n========================\n"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  errorMessage:
+                    type: string
+                  traceId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+              example:
+                status: 400
+                errorMessage: Missing or invalid fileId
+                traceId: 3ccc9b70af6feeeb177190672fb3e69c
+                timestamp: '2025-07-07T07:31:12.557052Z'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: Access denied. You do not have permission to download this file.
+        '404':
+          description: File not found or not ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                  fileId:
+                    type: string
+                  teamId:
+                    type: string
+                  status:
+                    type: string
+                  details:
+                    type: string
+              example:
+                statusCode: 404
+                fileId: 9fddf60d-9efa-429c-b84e-b4bb9d9bf807
+                teamId: d124fcdf-3707-4caf-babb-3da1f5f1ec1e
+                status: NOT_READY
+                details: File not available for download.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  errorMessage:
+                    type: string
+                  traceId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+              example:
+                status: 500
+                errorMessage: Internal Server Error.
+                traceId: e7f6d4c3b2a1f09876543210abcdef12
+                timestamp: '2025-07-07T07:05:00.000000Z'
+      security:
+      - TokenAuth: []
+  /v3/jobs/dataset-download.csv:
+    post:
+      tags:
+      - Download
+      summary: Download dataset from a project
+      description: 'Download dataset from a project with customizable unit selection, column filtering, and filter support.
+
+
+        **Dataset Types**
+
+        - **DATA_SET** - Unit View Dataset
+
+        - **JUDGMENT_DATA_SET** - Judgement View Dataset
+
+
+        **Features**
+
+        - **Unit Selection**: Specify specific unit IDs or leave empty to download all units
+
+        - **Column Filtering**: Specify only the required columns
+
+        - **Filter Support**: Apply saved filters created in the UI using filterName and userId/akonId
+
+
+        **Response Behavior:**
+
+        - **202 Response**: Dataset download is in progress. **You must call this same endpoint again with the exact same query parameters** (`type`, `filename`, `projectId`, and optionally `filterName`, `userId`) to check the status. Repeat the request every 2-5 seconds until you receive a 200 response.
+
+        - **200 Response**: Dataset is ready and is downloaded to the path where the curl is executed. The file content is streamed directly in the response body. **No separate URL fetch is needed** - the file is streamed directly when ready.
+
+
+        **Note**:
+
+        - **curl users**: Files are automatically saved using the `-o` flag
+
+        - **Postman/API tool users**: Need to use the "Save response to file" option like below'
+      operationId: downloadDatasetCsvFile
+      parameters:
+      - name: projectId
+        in: query
+        required: true
+        description: 'The unique identifier of the project to download the dataset from.
+
+          '
+        schema:
+          type: string
+          example: aefcc65c-c52e-41d1-911f-d1599a1711de
+      - name: type
+        in: query
+        required: true
+        description: 'Specifies the type of dataset to download. Valid values include:
+
+
+          - **DATA_SET** – Unit View dataset
+
+          - **JUDGMENT_DATA_SET** – Judgment View dataset
+
+          '
+        schema:
+          type: string
+          enum:
+          - DATA_SET
+          - JUDGMENT_DATA_SET
+          example: DATA_SET
+      - name: filename
+        in: query
+        required: true
+        description: The name of the output file you would like to specify
+        schema:
+          type: string
+          example: dataset-download.csv
+      - name: filterName
+        in: query
+        required: false
+        description: 'Optional filter name, requires userId/akonId.
+
+          '
+        schema:
+          type: string
+          example: 11
+      - name: userId/akonId
+        in: query
+        required: false
+        description: 'AKON ID of the user. Required when using filterName.
+
+          '
+        schema:
+          type: string
+          example: aec13557-6463-4c2e-94bb-8705ec06fe06
+      requestBody:
+        required: true
+        description: 'Dataset download configuration specifying which units and columns to include.
+
+
+          **Unit Selection:**
+
+          - Provide specific unit IDs in the `unitIds` array to download only those units
+
+          - Leave `unitIds` array empty to download all units from the project
+
+
+          **Column Selection:**
+
+          - Provide specific column names in the `columns` array to include only those columns
+
+          - Leave `columns` array empty to include all available columns
+
+
+          # Available Columns:
+
+
+          **Unit View (DATA_SET)**
+
+
+          | Column Name | Description |
+
+          |-------------|-------------|
+
+          | unitDisplayId | Unique identifier of the unit (display format). |
+
+          | replica | Replica identifier. |
+
+          | datasetRowType | Type of dataset row. |
+
+          | segmentGroupId | Identifier of the segment group. |
+
+          | jobTitle | Title of the associated job. |
+
+          | jobAlias | Alias of the job. |
+
+          | jobJudgmentsPerRow | Number of judgments required per row. |
+
+          | jobStatus | Status of the job for the unit. |
+
+          | jobType | Type of the job. |
+
+          | sourceFileBatchNumber | Batch number of the source file. |
+
+          | rowNumber | Row number in the dataset. |
+
+          | unitTagName | Tag name of the unit. |
+
+          | unitSourceMd5 | MD5 hash of the source. |
+
+          | createdAt | Timestamp when the unit was created. |
+
+          | judgmentsCollected | Number of collected judgments. |
+
+          | unitSegmentType | Type of unit segment. |
+
+          | questionId | ID of the associated question. |
+
+          | source._UNIT_GROUP | Unit group information. |
+
+          | source.audio_annotation | Audio annotation source. |
+
+          | source.audio_name | Name of the audio source. |
+
+          | source.audio_url | URL of the audio source. |
+
+
+          **Judgment View (JUDGMENT_DATA_SET)**
+
+
+          | Column Name | Description |
+
+          |-------------|-------------|
+
+          | latest.jobTitle | Title of the latest job cycle. |
+
+          | latest.jobAlias | Alias of the latest job cycle. |
+
+          | latest.jobJudgmentsPerRow | Required judgments per row in the latest cycle. |
+
+          | latest.jobCycleNumber | Cycle number of the latest job. |
+
+          | latest.jobStatus | Status of the job in the latest cycle. |
+
+          | latest.jobType | Type of the latest job cycle. |
+
+          | latest.workerEmail | Email of the worker. |
+
+          | latest.workerExternalId | External ID of the worker. |
+
+          | latest.workerId | Worker ID. |
+
+          | latest.workerGender | Gender of the worker. |
+
+          | latest.workerLanguage | Language of the worker. |
+
+          | latest.lastAnnotatorEmail | Email of the last annotator. |
+
+          | latest.lastAnnotatorExternalId | External ID of the last annotator. |
+
+          | latest.lastAnnotator | Name of the last annotator. |
+
+          | latest.activeStatus | Worker''s active status. |
+
+          | latest.agreementScore | Agreement score for the judgment. |
+
+          | latest.committedAt | Timestamp when committed. |
+
+          | latest.createdAt | Timestamp when created. |
+
+          | latest.distributionStatus | Distribution status of the judgment. |
+
+          | latest.expiresAt | Expiry timestamp. |
+
+          | latest.flowStatus | Flow status of the judgment. |
+
+          | latest.judgment.{output_field_name} | Output fields defined in job design. |
+
+          | latest.judgmentRawJson | Raw JSON judgment data. |
+
+          | latest.judgmentsCollected | Number of collected judgments. |
+
+          | latest.qualityScore | Quality score of the judgment. |
+
+          | latest.replica | Replica identifier. |
+
+          | latest.replicaGroupId | Replica group identifier. |
+
+          | latest.reservedAt | Timestamp when reserved. |
+
+          | latest.segmentSequence | Segment sequence identifier. |
+
+          | latest.updatedAt | Timestamp when updated. |
+
+          | earliest.* | Same fields as latest.* but for the earliest judgment. |
+
+          | history.* | Same fields as latest.* but for all judgment history records. |
+
+
+          **Notes**
+
+
+          - **latest.judgment.{output_field_name}** – Generated Columns: For each output field defined in the job design, a corresponding column in the format latest.judgment.{output_field_name} is automatically generated. These can also be explicitly included in the columns array when invoking the Dataset Download API.
+
+
+          ## Creating and Using Filters
+
+
+          ### Create and Apply a Filter in the Dataset UI
+
+          ![](https://qualityflow-api-docs.s3.amazonaws.com/adap/CreateFilter.png)
+
+
+          ### Save the Filter with a Name
+
+          ![](https://qualityflow-api-docs.s3.amazonaws.com/adap/SaveFilter.png)
+
+
+          ![](https://qualityflow-api-docs.s3.amazonaws.com/adap/SaveFilter2.png)
+
+
+          ### Access and Verify the Saved Filter
+
+          ![](https://qualityflow-api-docs.s3.amazonaws.com/adap/VerifyFilter.png)
+
+
+          ![](https://qualityflow-api-docs.s3.amazonaws.com/adap/VerifyFilter2.png)
+
+
+          Once saved, the filter name can be passed in the request or cURL command to download filtered datasets with selected columns.
+
+
+          **Note**: Filter creation is supported only in the QF Dataset UI Page.
+
+          '
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                unitIds:
+                  type: array
+                  items:
+                    type: string
+                  description: Array of unit IDs to download. Leave empty to download all units.
+                  example:
+                  - 1f12a49f-ebb8-4298-adba-3457b210ebfc
+                  - 1d56a5fc-f037-44c3-815d-4c958808460c
+                columns:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                    - unitDisplayId
+                    - replica
+                    - datasetRowType
+                    - segmentGroupId
+                    - jobTitle
+                    - jobAlias
+                    - jobJudgmentsPerRow
+                    - jobStatus
+                    - jobType
+                    - sourceFileBatchNumber
+                    - rowNumber
+                    - unitTagName
+                    - unitSourceMd5
+                    - createdAt
+                    - judgmentsCollected
+                    - unitSegmentType
+                    - questionId
+                    - source._UNIT_GROUP
+                    - source.audio_annotation
+                    - source.audio_name
+                    - source.audio_url
+                    - latest.jobTitle
+                    - latest.jobAlias
+                    - latest.jobJudgmentsPerRow
+                    - latest.jobCycleNumber
+                    - latest.jobStatus
+                    - latest.jobType
+                    - latest.workerEmail
+                    - latest.workerExternalId
+                    - latest.workerId
+                    - latest.workerGender
+                    - latest.workerLanguage
+                    - latest.lastAnnotatorEmail
+                    - latest.lastAnnotatorExternalId
+                    - latest.lastAnnotator
+                    - latest.activeStatus
+                    - latest.agreementScore
+                    - latest.committedAt
+                    - latest.createdAt
+                    - latest.distributionStatus
+                    - latest.expiresAt
+                    - latest.flowStatus
+                    - latest.judgmentRawJson
+                    - latest.judgmentsCollected
+                    - latest.qualityScore
+                    - latest.replica
+                    - latest.replicaGroupId
+                    - latest.reservedAt
+                    - latest.segmentSequence
+                    - latest.updatedAt
+                    - latest.judgment.*
+                    - earliest.*
+                    - history.*
+                  description: Array of column names to include in the download. Leave empty to include all columns.
+                  example:
+                  - unitDisplayId
+                  - datasetRowType
+                  - segmentGroupId
+                  - jobTitle
+                  - jobStatus
+                  - createdAt
+            examples:
+              download_all_units_all_columns:
+                summary: Download all units with all columns
+                value:
+                  unitIds: []
+              download_specific_units_all_columns:
+                summary: Download specific units with all columns
+                value:
+                  unitIds:
+                  - 081e98cc-6f40-455d-9bb7-942c0afb75e1
+                  - 3c2dbdfb-5a9f-4c2d-8cb0-c09cf0eb74b1
+              download_specific_units_specific_columns:
+                summary: Download specific units with specific columns
+                value:
+                  unitIds:
+                  - 081e98cc-6f40-455d-9bb7-942c0afb75e1
+                  - 3c2dbdfb-5a9f-4c2d-8cb0-c09cf0eb74b1
+                  columns:
+                  - unitDisplayId
+                  - datasetRowType
+                  - segmentGroupId
+                  - jobTitle
+                  - jobStatus
+                  - createdAt
+              download_all_units_specific_columns:
+                summary: Download all units with specific columns
+                value:
+                  unitIds: []
+                  columns:
+                  - unitDisplayId
+                  - datasetRowType
+                  - segmentGroupId
+                  - jobTitle
+                  - jobStatus
+                  - createdAt
+      x-codeSamples:
+      - lang: curl cURL
+        label: Download dataset all units and all columns cURL
+        source: "curl -L -X POST 'https://api.appen.com/v3/jobs/dataset-download.csv?type=DATA_SET&projectId=1b1e5b6d-8b66-48b7-a73c-075b8e5d8524&filename=<fileName>' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-H 'Content-Type: application/json' \\\n-d '{\n\"unitIds\": []\n    }' \\\n-o <file_name_for_download>.zip \\\n-w \"\\n\\n===== RESPONSE INFO =====\\nHTTP Status: %{http_code}\\nContent-Type: %{content_type}\\nSize: %{size_download} bytes\\n========================\\n\"\n"
+      - lang: curl
+        label: Download dataset with specific units and all columns cURL
+        source: "curl -L -X POST 'https://api.appen.com/v3/jobs/dataset-download.csv?type=DATA_SET&projectId=1b1e5b6d-8b66-48b7-a73c-075b8e5d8524&filename=<fileName>' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n- H 'Content-Type: application/json' \\\n-d '{\n\"unitIds\": [\n  \"081e98cc-6f40-455d-9bb7-942c0afb75e1\",\n  \"3c2dbdfb-5a9f-4c2d-8cb0-c09cf0eb74b1\"\n    ]\n    }' \\\n-o <file_name_for_download>.zip \\\n-w \"\\n\\n===== RESPONSE INFO =====\\nHTTP Status: %{http_code}\\nContent-Type: %{content_type}\\nSize: %{size_download} bytes\\n========================\\n\"\n"
+      - lang: curl
+        label: Download dataset with specific units and specific columns cURL
+        source: "curl -L -X POST 'https://api.appen.com/v3/jobs/dataset-download.csv?type=DATA_SET&projectId=1b1e5b6d-8b66-48b7-a73c-075b8e5d8524&filename=<fileName>' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-H 'Content-Type: application/json' \\\n-d '{\n  \"unitIds\": [\n  \"081e98cc-6f40-455d-9bb7-942c0afb75e1\",\n  \"3c2dbdfb-5a9f-4c2d-8cb0-c09cf0eb74b1\"\n  ],\n  \"columns\": [\n  \"unitDisplayId\",\n  \"datasetRowType\",\n  \"segmentGroupId\",\n  \"jobTitle\",\n  \"jobStatus\",\n  \"createdAt\"\n]\n}' \\\n-o <file_name_for_download>.zip \\\n-w \"\\n\\n===== RESPONSE INFO =====\\nHTTP Status: %{http_code}\\nContent-Type: %{content_type}\\nSize: %{size_download} bytes\\n========================\\n\"\n"
+      - lang: curl
+        label: Download dataset with specific columns and all units cURL
+        source: "curl -L -X POST 'https://api.appen.com/v3/jobs/dataset-download.csv?type=JUDGMENT_DATA_SET&projectId=1b1e5b6d-8b66-48b7-a73c-075b8e5d8524&filename=<fileName>' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-H 'Content-Type: application/json' \\\n -d '{\n\"unitIds\": [],\n\"columns\": [\n \"unitDisplayId\",\n \"datasetRowType\",\n \"segmentGroupId\",\n \"jobTitle\",\n \"jobStatus\",\n \"createdAt\"\n]\n}' \\\n-o <file_name_for_download>.zip \\\n-w \"\\n\\n===== RESPONSE INFO =====\\nHTTP Status: %{http_code}\\nContent-Type: %{content_type}\\nSize: %{size_download} bytes\\n========================\\n\"\n"
+      - lang: curl
+        label: Download dataset with filter cURL
+        source: 'curl -L -X POST ''https://api.appen.com/v3/jobs/dataset-download.csv?type=JUDGMENT_DATA_SET&projectId=1b1e5b6d-8b66-48b7-a73c-075b8e5d8524&filename=<fileName>&filterName=<filterName>&userId=aec13557-6463-4c2e-94bb-8705ec06fe06'' \
+
+          -H ''Authorization: Token token=<your-api-key>'' \
+
+          -H ''Content-Type: application/json'' \
+
+          -d ''{}'' \
+
+          -o <file_name_for_download>.zip \
+
+          -w "\n\n===== RESPONSE INFO =====\nHTTP Status: %{http_code}\nContent-Type: %{content_type}\nSize: %{size_download} bytes\n========================\n"
+
+          '
+      responses:
+        '200':
+          description: Download completed and URL available for download
+          headers:
+            Location:
+              description: Direct URL to download the completed dataset
+              schema:
+                type: string
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Curl transfer statistics and response information output
+              example: "% Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                 Dload  Upload   Total   Spent    Left  Speed\n100 19887    0 19866  100    21   7139      7  0:00:03  0:00:02  0:00:01  7145\n\n\n===== RESPONSE INFO =====\nHTTP Status: 200\nContent-Type: application/zip\nSize: 19866 bytes\n========================\n"
+        '202':
+          description: Download is in progress
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Curl transfer statistics and response information output
+              example: "% Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                 Dload  Upload   Total   Spent    Left  Speed\n100   230    0   209  100    21    119     12  0:00:01  0:00:01 --:--:--   131\n\n\n===== RESPONSE INFO =====\nHTTP Status: 202\nContent-Type: application/json\nSize: 209 bytes\n========================\n"
+        '400':
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  error:
+                    type: string
+              example:
+                status: 400
+                error: Invalid request parameters
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  error:
+                    type: string
+              example:
+                status: 403
+                error: Access denied. You do not have permission to download this dataset.
+        '404':
+          description: Project not found or dataset not ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  error:
+                    type: string
+                  details:
+                    type: string
+                  projectId:
+                    type: string
+                  teamId:
+                    type: string
+              example:
+                status: 404
+                error: Project not found or dataset not ready
+                details: Dataset not available for download.
+                projectId: e74c1b9d-16ff-4a29-8c4c-e3147877de1b
+                teamId: f6c0b8cb-de69-495c-980b-2b0e0a6ca288
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  errorMessage:
+                    type: string
+                  traceId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+              example:
+                status: 500
+                errorMessage: Internal Server Error.
+                traceId: e7f6d4c3b2a1f09876543210abcdef12
+                timestamp: '2025-07-07T07:05:00.000000Z'
+      security:
+      - TokenAuth: []
+components:
+  securitySchemes:
+    TokenAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+      description: 'API Token authentication. Pass your API token in the Authorization header:
+
+        `Authorization: Token token=your-api-token-here`
+
+        '
