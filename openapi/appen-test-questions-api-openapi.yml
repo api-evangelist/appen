@@ -102,7 +102,8 @@ paths:
 
         1. Only units already present in the project dataset can be added as test questions.
 
-        2. Contributor scores report can be downloaded from the "Download a job level report" tab using the job level report cURL with `type` parameter set to `contributor_scores_report`.'
+        2. Contributor scores report can be downloaded from the "Download a job level report" tab using the job level report cURL with `type`
+        parameter set to `contributor_scores_report`.'
       operationId: addTestQuestionsToJob
       parameters:
       - name: teamId
@@ -155,7 +156,10 @@ paths:
       x-codeSamples:
       - lang: curl
         label: Add Test Questions cURL
-        source: "curl -L -X POST 'https://api.appen.com/v3/project-flow/projects/add-test-question?teamId=<teamId>' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-H 'Content-Type: application/json' \\\n-d '{\n  \"projectId\": \"6c680788-be5c-4b5f-8776-d5e63b97bca7\",\n  \"jobId\": \"968bf9a6-f091-4804-b3ca-b5d0a4abf89b\",\n  \"addTestQuestionVO\": [\n    {\n      \"unitId\": \"92d60008-a942-4084-9038-713984710102\"\n    },\n    {\n      \"unitId\": \"47cd1658-58dd-469b-8939-a2a3e110d701\"\n    }\n  ]\n}'\n"
+        source: "curl -L -X POST 'https://api.appen.com/v3/project-flow/projects/add-test-question?teamId=<teamId>' \\\n-H 'Authorization: Token\
+          \ token=<your-api-key>' \\\n-H 'Content-Type: application/json' \\\n-d '{\n  \"projectId\": \"6c680788-be5c-4b5f-8776-d5e63b97bca7\"\
+          ,\n  \"jobId\": \"968bf9a6-f091-4804-b3ca-b5d0a4abf89b\",\n  \"addTestQuestionVO\": [\n    {\n      \"unitId\": \"92d60008-a942-4084-9038-713984710102\"\
+          \n    },\n    {\n      \"unitId\": \"47cd1658-58dd-469b-8939-a2a3e110d701\"\n    }\n  ]\n}'\n"
       responses:
         '200':
           description: Test questions added successfully
@@ -235,7 +239,8 @@ paths:
                     example: 2017
                   message:
                     type: string
-                    example: 'Bad Request:Duplicate data for unitId: abcb4175-843d-4db2-a596-61e39e60d1cc This unit has already added as a test question in another job for this project'
+                    example: 'Bad Request:Duplicate data for unitId: abcb4175-843d-4db2-a596-61e39e60d1cc This unit has already added as a test
+                      question in another job for this project'
                   traceId:
                     type: string
                     example: 8cc863ec3c0e0b06
@@ -294,7 +299,9 @@ paths:
       tags:
       - Test Questions
       summary: Upload Test Questions
-      description: 'Upload test questions from a CSV file to a specific job within a project. This endpoint accepts a CSV file containing test question data with required columns: {column1, _golden, *_gold, *_gold_reason , quiz_work_mode}. Use the returned status poll URL to check the upload status.
+      description: 'Upload test questions from a CSV file to a specific job within a project. This endpoint accepts a CSV file containing test
+        question data with required columns: {column1, _golden, *_gold, *_gold_reason , quiz_work_mode}. Use the returned status poll URL to check
+        the upload status.
 
 
         **Sample CSV File**:
@@ -305,9 +312,12 @@ paths:
 
         **Important Notes**:
 
-        1. Only units already present in the project dataset can be uploaded as test questions. Non-matching units are automatically filtered out. For example, uploading 10 units when only 5 exist in the dataset will result in only 5 test questions being added. Already uploaded test questions will not be uploaded again.
+        1. Only units already present in the project dataset can be uploaded as test questions. Non-matching units are automatically filtered
+        out. For example, uploading 10 units when only 5 exist in the dataset will result in only 5 test questions being added. Already uploaded
+        test questions will not be uploaded again.
 
-        2. Contributor scores report can be downloaded from the "Download a job level report" tab using the job level report cURL with `type` parameter set to `contributor_scores_report`.'
+        2. Contributor scores report can be downloaded from the "Download a job level report" tab using the job level report cURL with `type`
+        parameter set to `contributor_scores_report`.'
       operationId: uploadTestQuestions
       parameters:
       - name: fileName
@@ -335,7 +345,9 @@ paths:
           example: 81167fe9-d274-4b71-a02b-cb54c0cf6aa7
       requestBody:
         required: true
-        description: CSV file content containing test question data. Required columns:- Problem (question content), _golden (TRUE/FALSE for enabled status), example_gold (gold standard answer), example_gold_reason (explanation for the answer), quiz_work_mode (work mode type, values can be QUIZ, WORK, QUIZ_WORK).
+        description: CSV file content containing test question data. Required columns:- Problem (question content), _golden (TRUE/FALSE for enabled
+          status), example_gold (gold standard answer), example_gold_reason (explanation for the answer), quiz_work_mode (work mode type, values
+          can be QUIZ, WORK, QUIZ_WORK).
         content:
           text/csv:
             schema:
@@ -343,17 +355,27 @@ paths:
               format: binary
             example: 'column1,_golden,*_gold,*_gold_reason,quiz_work_mode
 
-              "In a royal palace, a queen hires four royal advisors, and each advisor has five knights under their command. How many knights are there if we get the total number of them all?","TRUE","20","We will use Multiplication operation to solve this problem:\nif each of the four royal advisors has five knights under their command, then the total number of knights in the royal palace can be found by multiplying the number of advisors by the number of knights each advisor has","QUIZ_WORK"
+              "In a royal palace, a queen hires four royal advisors, and each advisor has five knights under their command. How many knights are
+              there if we get the total number of them all?","TRUE","20","We will use Multiplication operation to solve this problem:\nif each
+              of the four royal advisors has five knights under their command, then the total number of knights in the royal palace can be found
+              by multiplying the number of advisors by the number of knights each advisor has","QUIZ_WORK"
 
-              "The moon is currently 384,400 kilometer away from Earth. If a space probe is sent to the moon and it travels 345,000 kilometer from Earth, what is the remaining distance to reach the moon?","TRUE","39400","To solve this problem, we need to use the operation of subtraction. We know that the current distance between the moon and Earth is 384,400 km. We also know that the space probe has traveled 345,000 kilometer from Earth. To find the remaining distance to reach the moon, we need to subtract the distance traveled by the QUIZ","WORK"
+              "The moon is currently 384,400 kilometer away from Earth. If a space probe is sent to the moon and it travels 345,000 kilometer
+              from Earth, what is the remaining distance to reach the moon?","TRUE","39400","To solve this problem, we need to use the operation
+              of subtraction. We know that the current distance between the moon and Earth is 384,400 km. We also know that the space probe has
+              traveled 345,000 kilometer from Earth. To find the remaining distance to reach the moon, we need to subtract the distance traveled
+              by the QUIZ","WORK"
 
-              "In a flower garden, there are 8 sunflowers. If 2 more sunflowers bloom, how many sunflowers will there be total?","TRUE","10","We solve this problem using addition. We know that there are 8 sunflowers initially, and 2 more sunflowers bloom, so we can set up an equation","WORK"
+              "In a flower garden, there are 8 sunflowers. If 2 more sunflowers bloom, how many sunflowers will there be total?","TRUE","10","We
+              solve this problem using addition. We know that there are 8 sunflowers initially, and 2 more sunflowers bloom, so we can set up
+              an equation","WORK"
 
               '
       x-codeSamples:
       - lang: curl
         label: Upload Test Questions cURL
-        source: 'curl -L -X POST ''https://api.appen.com/v3/project-flow/projects/upload-test-question?fileName=<fileName>&projectId=<projectId>&jobId=<jobId>'' \
+        source: 'curl -L -X POST ''https://api.appen.com/v3/project-flow/projects/upload-test-question?fileName=<fileName>&projectId=<projectId>&jobId=<jobId>''
+          \
 
           -H ''Authorization: Token token=<your-api-key>'' \
 
@@ -509,7 +531,8 @@ paths:
       tags:
       - Test Questions
       summary: Update Test Questions
-      description: 'Update existing test questions and their settings within a job. This endpoint allows you to modify test question content, answers, explanations, and operational modes.
+      description: 'Update existing test questions and their settings within a job. This endpoint allows you to modify test question content,
+        answers, explanations, and operational modes.
 
 
         **Important Notes**:
@@ -520,7 +543,8 @@ paths:
 
         3. Changes are applied immediately and affect ongoing contributor evaluations.
 
-        4. **To identify which units are configured as test questions, use the List Units in Project (With Golden Units filter) under Route Units page to retrieve test question unitIds and status before calling this update endpoint**.
+        4. **To identify which units are configured as test questions, use the List Units in Project (With Golden Units filter) under Route Units
+        page to retrieve test question unitIds and status before calling this update endpoint**.
 
 
         **Valid Values:**
@@ -531,7 +555,8 @@ paths:
 
         - `hideAnswerMode`: true, false
 
-        - `minimumMatchingAccuracy`: 0-100 (percentage) (This parameter should be used when there is TextArea in the CML design and Levenshtein''s distance is used to evaluate contributors on the test questions)
+        - `minimumMatchingAccuracy`: 0-100 (percentage) (This parameter should be used when there is TextArea in the CML design and Levenshtein''s
+        distance is used to evaluate contributors on the test questions)
 
 
         **You can get the name attribute to be configured in the request from the CML design code editor.**
@@ -622,13 +647,30 @@ paths:
       x-codeSamples:
       - lang: curl
         label: Update Test Questions cURL
-        source: "curl -L -X POST 'https://api.appen.com/v3/project-flow/projects/update-tq-by-project?projectId=<projectId>' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-H 'Content-Type: application/json' \\\n-d '[\n  {\n    \"unitId\": \"f46c1c2f-e312-431b-9456-fbb18655e054\",\n    \"enableDisableMode\": true,\n    \"hideAnswerMode\": false,\n    \"quizWorkMode\": \"QUIZ\",\n    \"minimumMatchingAccuracy\": 0,\n    \"questions\": [\n      {\n        \"name\": \"ask_question_here\",\n        \"answer\": [\n          \"first_option\",\n          \"second_option\"\n        ],\n        \"reason\": [\n          \"\"\n        ]\n      }\n    ],\n    \"jobId\": \"968bf9a6-f091-4804-b3ca-b5d0a4abf89b\"\n  },\n  {\n    \"unitId\": \"76fc54f5-c2ba-41d9-a8de-7fbfb02f6483\",\n    \"enableDisableMode\": true,\n    \"hideAnswerMode\": false,\n    \"quizWorkMode\": \"WORK\",\n    \"minimumMatchingAccuracy\": 0,\n    \"questions\": [\n      {\n        \"name\": \"ask_question_here\",\n        \"answer\": [\n          \"first_option\"\n        ],\n        \"reason\": [\n          \"jhuaga d\"\n        ]\n      }\n    ],\n    \"jobId\": \"968bf9a6-f091-4804-b3ca-b5d0a4abf89b\"\n  }\n]'\n"
+        source: "curl -L -X POST 'https://api.appen.com/v3/project-flow/projects/update-tq-by-project?projectId=<projectId>' \\\n-H 'Authorization:\
+          \ Token token=<your-api-key>' \\\n-H 'Content-Type: application/json' \\\n-d '[\n  {\n    \"unitId\": \"f46c1c2f-e312-431b-9456-fbb18655e054\"\
+          ,\n    \"enableDisableMode\": true,\n    \"hideAnswerMode\": false,\n    \"quizWorkMode\": \"QUIZ\",\n    \"minimumMatchingAccuracy\"\
+          : 0,\n    \"questions\": [\n      {\n        \"name\": \"ask_question_here\",\n        \"answer\": [\n          \"first_option\",\n\
+          \          \"second_option\"\n        ],\n        \"reason\": [\n          \"\"\n        ]\n      }\n    ],\n    \"jobId\": \"968bf9a6-f091-4804-b3ca-b5d0a4abf89b\"\
+          \n  },\n  {\n    \"unitId\": \"76fc54f5-c2ba-41d9-a8de-7fbfb02f6483\",\n    \"enableDisableMode\": true,\n    \"hideAnswerMode\": false,\n\
+          \    \"quizWorkMode\": \"WORK\",\n    \"minimumMatchingAccuracy\": 0,\n    \"questions\": [\n      {\n        \"name\": \"ask_question_here\"\
+          ,\n        \"answer\": [\n          \"first_option\"\n        ],\n        \"reason\": [\n          \"jhuaga d\"\n        ]\n      }\n\
+          \    ],\n    \"jobId\": \"968bf9a6-f091-4804-b3ca-b5d0a4abf89b\"\n  }\n]'\n"
       - lang: curl
         label: Update Test Question for Text Area cURL
-        source: "curl -L -X POST 'https://api.appen.com/v3/project-flow/projects/update-tq-by-project?projectId=<projectId>' \\\n-H 'Authorization: Token token=<your-api-key>' \\\n-H 'Content-Type: application/json' \\\n-d '[\n  {\n    \"unitId\": \"b3b57b77-9850-487c-a043-6543692925f5\",\n    \"enableDisableMode\": true,\n    \"hideAnswerMode\": true,\n    \"quizWorkMode\": \"QUIZ_WORK\",\n    \"minimumMatchingAccuracy\": 50,\n    \"questions\": [\n      {\n        \"name\": \"enter_some_text_1\",\n        \"answer\": [\n          \"Hi I am Elon Musk\"\n        ],\n        \"reason\": [\n          \"Richest person in the world\"\n        ]\n      }\n    ],\n    \"jobId\": \"c91a91b4-52e9-4270-a41d-db9e264ae438\"\n  }\n]'\n"
+        source: "curl -L -X POST 'https://api.appen.com/v3/project-flow/projects/update-tq-by-project?projectId=<projectId>' \\\n-H 'Authorization:\
+          \ Token token=<your-api-key>' \\\n-H 'Content-Type: application/json' \\\n-d '[\n  {\n    \"unitId\": \"b3b57b77-9850-487c-a043-6543692925f5\"\
+          ,\n    \"enableDisableMode\": true,\n    \"hideAnswerMode\": true,\n    \"quizWorkMode\": \"QUIZ_WORK\",\n    \"minimumMatchingAccuracy\"\
+          : 50,\n    \"questions\": [\n      {\n        \"name\": \"enter_some_text_1\",\n        \"answer\": [\n          \"Hi I am Elon Musk\"\
+          \n        ],\n        \"reason\": [\n          \"Richest person in the world\"\n        ]\n      }\n    ],\n    \"jobId\": \"c91a91b4-52e9-4270-a41d-db9e264ae438\"\
+          \n  }\n]'\n"
       - lang: curl
         label: List Test Questions in the Project
-        source: "curl -X POST \"https://api.appen.com/v3/project-flow/projects/units?projectId=faecd4fa-683f-402e-b7ea-8a904ae92021\" \\\n-H \"Authorization: Token token=<your-api-key>\" \\\n-H \"Content-Type: application/json\" \\\n-d '{\n   \"startRow\": 0,\n   \"endRow\": 29,\n  \"filterModel\": {\n      \"datasetRowType\": {\n      \"filterType\": \"SET\",\n      \"values\": [\"UNIT\", \"\"]\n        },\n     \"source._golden\": {\n     \"filterType\": \"SET\",\n     \"values\": [\"TRUE\"]\n        }\n    },\n  \"sortModel\": [],\n  \"queryString\": \"\"\n    }'\n"
+        source: "curl -X POST \"https://api.appen.com/v3/project-flow/projects/units?projectId=faecd4fa-683f-402e-b7ea-8a904ae92021\" \\\n-H \"\
+          Authorization: Token token=<your-api-key>\" \\\n-H \"Content-Type: application/json\" \\\n-d '{\n   \"startRow\": 0,\n   \"endRow\"\
+          : 29,\n  \"filterModel\": {\n      \"datasetRowType\": {\n      \"filterType\": \"SET\",\n      \"values\": [\"UNIT\", \"\"]\n     \
+          \   },\n     \"source._golden\": {\n     \"filterType\": \"SET\",\n     \"values\": [\"TRUE\"]\n        }\n    },\n  \"sortModel\":\
+          \ [],\n  \"queryString\": \"\"\n    }'\n"
       responses:
         '200':
           description: Test questions updated successfully
@@ -780,6 +822,16 @@ components:
         error: Internal Server Error
         message: Failed to update job
         path: /publicapi/work-service/jobs
+    QuestionAnswerMapRequest:
+      type: object
+      description: Referenced by this document but never defined in it. API Evangelist added this empty placeholder so the document resolves;
+        the shape is unknown and is NOT a claim about the API.
+      x-ae-placeholder: true
+    UpdateTestQuestionRequest:
+      type: object
+      description: Referenced by this document but never defined in it. API Evangelist added this empty placeholder so the document resolves;
+        the shape is unknown and is NOT a claim about the API.
+      x-ae-placeholder: true
   securitySchemes:
     TokenAuth:
       type: http

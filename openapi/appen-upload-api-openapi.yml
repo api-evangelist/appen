@@ -407,13 +407,6 @@ paths:
                 timestamp: '2025-07-07T07:05:00.000000Z'
 components:
   schemas:
-    SimpleError:
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          type: string
     ErrorResponse:
       type: object
       required:
@@ -440,6 +433,13 @@ components:
         code:
           type: string
         message:
+          type: string
+    SimpleError:
+      type: object
+      required:
+      - error
+      properties:
+        error:
           type: string
   securitySchemes:
     TokenAuth:

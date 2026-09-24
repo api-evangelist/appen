@@ -955,35 +955,6 @@ paths:
       - TokenAuth: []
 components:
   schemas:
-    Response:
-      type: object
-      required:
-      - message
-      - code
-      - data
-      - time
-      properties:
-        message:
-          type: string
-          description: Response message
-          example: success
-        code:
-          type: integer
-          description: HTTP status code
-          example: 200
-        data:
-          description: Response data (type varies by endpoint)
-        traceId:
-          type:
-          - string
-          - 'null'
-          description: Request trace identifier for debugging
-          example: null
-        time:
-          type: string
-          format: date-time
-          description: Response timestamp
-          example: '2025-07-02T10:02:04.813876Z'
     Error:
       type: object
       required:
@@ -1018,6 +989,35 @@ components:
         error: Internal Server Error
         message: Failed to update job
         path: /publicapi/work-service/jobs
+    Response:
+      type: object
+      required:
+      - message
+      - code
+      - data
+      - time
+      properties:
+        message:
+          type: string
+          description: Response message
+          example: success
+        code:
+          type: integer
+          description: HTTP status code
+          example: 200
+        data:
+          description: Response data (type varies by endpoint)
+        traceId:
+          type:
+          - string
+          - 'null'
+          description: Request trace identifier for debugging
+          example: null
+        time:
+          type: string
+          format: date-time
+          description: Response timestamp
+          example: '2025-07-02T10:02:04.813876Z'
   securitySchemes:
     TokenAuth:
       type: http

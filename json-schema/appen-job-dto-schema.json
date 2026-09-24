@@ -1,0 +1,427 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/appen/main/json-schema/appen-job-dto-schema.json",
+  "title": "JobDTO",
+  "description": "Job Data Transfer Object for updating job settings.\n\n## FIELD OVERVIEW\n\n** REQUIRED (5):** `id`, `projectId`, `teamId`, `title`, `type`\n\n** CORE CONFIG:** `version`, `assignmentLeaseExpiry`, `judgmentsPerRow`, `rowsPerPage`, `displayContributorName`, `judgmentModifiable`\n\n** WORKFLOW:** `state`, `activeStatus`, `feedback`, `sendBackOp`, `unitSegmentType`, `allowSelfQa`, `allowAbandonUnits`\n\n** TIME & LIMITS:** `timeLimitThresholdSec` (0-100%), `enableExpirationTime`, `expirationDurationSet`, `expirationDurationUpdate`\n\n** QUALITY:** `dynamicJudgements` (minimumConfidence 0.0-1.0), `threshold` (0.0-1.0), `maxJudgmentPerContributor`\n\n** FEATURES:** `enableBlueTooth`, `enableShareLink`, `enableExternalAutoAssignJob`, `launchPlatform`, `latestAppVersion`\n\n** SESSION:** `totalSessionNumber`, `reusablePrompt`, `reusablePin`, `maxSkippablePromptNum`\n\n** CONTENT:** `instruction`, `jobCml`, `jobFilter`, `jobCrowd`, `testQuestionSettings`\n\n** BUSINESS:** `payRateType`, `invoiceStatisticsType`, `validationRuleId`, `qaAdvancedOptions`\n\n** METADATA:** `createdAt`, `displayId`, `flowId`, `internalSecret`, `copiedFrom` (read-only fields)\n\n## KEY RULES\n- TeamId must match query parameter | Job titles must be unique in project\n- Negative values not allowed for: time, expiration, confidence fields\n- timeLimitThresholdSec is percentage (0-100), not seconds\n- When enableExpirationTime > 0, duration fields must be > 0\n- WORK jobs cannot have feedback ENABLED\n",
+  "x-generated": "2026-09-23",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/appen-jobs-api-openapi.yml#/components/schemas/JobDTO",
+  "type": "object",
+  "required": [
+    "id",
+    "projectId",
+    "teamId",
+    "title",
+    "type"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "**REQUIRED**: Unique job identifier (UUID). Identifies the job to update."
+    },
+    "version": {
+      "type": "integer",
+      "description": "**RECOMMENDED**: Job version for optimistic locking. Prevents conflicting updates."
+    },
+    "projectId": {
+      "type": "string",
+      "description": "**REQUIRED**: Project identifier (UUID). Must have access to this project."
+    },
+    "teamId": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "**REQUIRED**: Team identifier (UUID). Must match teamId query parameter."
+    },
+    "title": {
+      "type": "string",
+      "description": "**REQUIRED**: Job title. Must be unique within project (error 60080 if duplicate)."
+    },
+    "displayId": {
+      "type": "integer",
+      "description": "**READ-ONLY**: Auto-generated human-readable job ID. Default: auto-generated."
+    },
+    "cycleNumber": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "**OPTIONAL**: Job cycle number. Default: 0, Range: ≥0."
+    },
+    "feedback": {
+      "type": "string",
+      "enum": [
+        "ENABLED",
+        "DISABLED"
+      ],
+      "description": "**OPTIONAL**: Contributor feedback setting. Default: DISABLED. WORK jobs cannot have ENABLED."
+    },
+    "flowId": {
+      "type": "string",
+      "description": "**OPTIONAL**: Workflow identifier (UUID). Default: same as job ID."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "WORK",
+        "QA"
+      ],
+      "description": "**REQUIRED**: Job type. WORK = standard job, QA = quality assurance. WORK jobs cannot have feedback ENABLED."
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "RUNNING",
+        "PAUSED",
+        "COMPLETED",
+        "CANCELLED"
+      ],
+      "description": "**OPTIONAL**: Current job state. Controls job execution status."
+    },
+    "activeStatus": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "INACTIVE"
+      ],
+      "description": "**OPTIONAL**: Job active status. Default: ACTIVE."
+    },
+    "assignmentLeaseExpiry": {
+      "type": "integer",
+      "minimum": 60,
+      "description": "**RECOMMENDED**: Assignment lease time in seconds. Min: 60, controls how long assignments are held."
+    },
+    "judgmentsPerRow": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "**RECOMMENDED**: Judgments required per row. Default: 1, Min: 1. Higher = more consensus."
+    },
+    "rowsPerPage": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "**RECOMMENDED**: Rows per assignment page. Min: 1, controls assignment size."
+    },
+    "displayContributorName": {
+      "type": "boolean",
+      "description": "**OPTIONAL**: Show contributor names. Default: false (anonymous)."
+    },
+    "judgmentModifiable": {
+      "type": "boolean",
+      "description": "**OPTIONAL**: Allow judgment editing after submission. Default: false."
+    },
+    "sendBackOp": {
+      "type": "string",
+      "enum": [
+        "SEND_BACK_TO_SAME_CONTRIBUTOR",
+        "SEND_BACK_TO_ANY_CONTRIBUTOR",
+        "SEND_BACK_TO_POOL",
+        "IGNORE"
+      ],
+      "description": "**OPTIONAL**: Rejected work handling. Default: SEND_BACK_TO_SAME_CONTRIBUTOR."
+    },
+    "copiedFrom": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "**READ-ONLY**: ID of job this was copied from (if applicable).\n\n- **Default**: null\n- **Purpose**: Track job lineage for copied jobs\n- **Note**: Set automatically when copying jobs\n"
+    },
+    "maxJudgmentPerContributorEnabled": {
+      "type": "boolean",
+      "description": "**OPTIONAL**: Whether to limit judgments per contributor.\n\n- **Default**: false\n- **Purpose**: Enable contributor workload limits\n- **Related**: Works with maxJudgmentPerContributor field\n"
+    },
+    "maxJudgmentPerContributor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "**OPTIONAL**: Maximum judgments per contributor.\n\n- **Default**: 0 (unlimited)\n- **Range**: ≥ 0 (0 = unlimited, positive values set limit)\n- **Purpose**: Prevent single contributor from dominating job\n- **Requirement**: Only applies when maxJudgmentPerContributorEnabled = true\n"
+    },
+    "maxSkippablePromptNum": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "**OPTIONAL**: Maximum number of skippable prompts.\n\n- **Default**: 0 (no skipping allowed)\n- **Range**: ≥ 0 (0 = no skipping, positive values allow skipping)\n- **Purpose**: Allow contributors to skip difficult assignments\n"
+    },
+    "unitSegmentType": {
+      "type": "string",
+      "enum": [
+        "UNIT_ONLY",
+        "UNIT_SEGMENT",
+        "UNIT_WITH_PREVIEW"
+      ],
+      "description": "**OPTIONAL**: Unit segment type for data presentation.\n\n- **Default**: UNIT_ONLY\n- **Values**:\n  - UNIT_ONLY: Present data as single units\n  - UNIT_SEGMENT: Present data in segments\n  - UNIT_WITH_PREVIEW: Include preview capability\n- **Purpose**: Controls how data is structured for contributors\n"
+    },
+    "internalSecret": {
+      "type": "string",
+      "description": "**SYSTEM**: Internal secret for job access (auto-generated).\n\n- **Default**: Auto-generated secure string\n- **Purpose**: Internal authentication token\n- **Note**: Do not modify unless specifically required\n"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Job creation timestamp"
+    },
+    "allowSelfQa": {
+      "type": "boolean",
+      "description": "Whether self QA is allowed"
+    },
+    "allowAbandonUnits": {
+      "type": "boolean",
+      "description": "Whether units can be abandoned"
+    },
+    "maxNumberOfAllowedAbandonment": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Maximum number of allowed abandonments (must be non-negative)"
+    },
+    "sendAbandonedUnitsBackToJob": {
+      "type": "boolean",
+      "description": "Whether abandoned units are sent back to job"
+    },
+    "instruction": {
+      "type": "string",
+      "description": "Job instructions"
+    },
+    "validationRuleId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Validation rule identifier"
+    },
+    "enableBlueTooth": {
+      "type": "boolean",
+      "description": "Whether Bluetooth is enabled"
+    },
+    "launchPlatform": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Launch platforms"
+    },
+    "latestAppVersion": {
+      "type": "boolean",
+      "description": "Whether latest app version is required"
+    },
+    "reusablePrompt": {
+      "type": "boolean",
+      "description": "Whether prompts are reusable"
+    },
+    "reusablePin": {
+      "type": "boolean",
+      "description": "Whether pins are reusable"
+    },
+    "totalSessionNumber": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of sessions (0 = no limit, positive values set session limit)"
+    },
+    "firstLaunchTime": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "First launch timestamp"
+    },
+    "promptsEnabling": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Prompts enabling configuration"
+    },
+    "reviewReasons": {
+      "type": "string",
+      "description": "Review reasons"
+    },
+    "reviewReasonOption": {
+      "type": "string",
+      "description": "Review reason option"
+    },
+    "parentJobId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Parent job identifier"
+    },
+    "unitGroupOption": {
+      "type": "string",
+      "description": "Unit group option"
+    },
+    "appendable": {
+      "type": "boolean",
+      "description": "**OPTIONAL**: Allow job data appending. Default: false."
+    },
+    "enableShareLink": {
+      "type": "boolean",
+      "description": "**OPTIONAL**: Enable job sharing links. Default: false."
+    },
+    "payRateType": {
+      "type": "string",
+      "description": "**OPTIONAL**: Payment rate type. Default: empty string."
+    },
+    "invoiceStatisticsType": {
+      "type": "string",
+      "enum": [
+        "UNIT_COUNT",
+        "JUDGMENT_COUNT",
+        "TIME_BASED"
+      ],
+      "description": "**OPTIONAL**: Invoice statistics calculation type. Default: UNIT_COUNT."
+    },
+    "operateHistoryId": {
+      "type": "string",
+      "description": "**SYSTEM**: Operation history identifier (auto-generated)."
+    },
+    "jobCml": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "**OPTIONAL**: Job CML (Contributor Markup Language) configuration."
+    },
+    "jobFilter": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "**OPTIONAL**: Job data filtering configuration."
+    },
+    "jobCrowd": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "**OPTIONAL**: Job crowd/contributor settings."
+    },
+    "testQuestionSettings": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "**OPTIONAL**: Test question configuration. jobId and teamId must match main job."
+    },
+    "timeLimitThresholdSec": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "**OPTIONAL**: Time limit threshold as percentage (0-100), not seconds. Default: 0 (disabled)."
+    },
+    "enableExternalAutoAssignJob": {
+      "type": "boolean",
+      "description": "**OPTIONAL**: Enable external auto assignment. Default: false."
+    },
+    "enableExpirationTime": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "**OPTIONAL**: Expiration control. Default: 0 (disabled). When >0, duration fields must be >0."
+    },
+    "expirationDurationSet": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "**OPTIONAL**: Assignment expiration duration (seconds). Default: 0 (disabled), Range: ≥0."
+    },
+    "expirationDurationUpdate": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "**OPTIONAL**: Update expiration duration (seconds). Default: 0 (disabled), Range: ≥0."
+    },
+    "threshold": {
+      "type": "number",
+      "format": "float",
+      "minimum": 0,
+      "description": "**OPTIONAL**: Job threshold value. Default: 0.0, Range: 0.0-1.0."
+    },
+    "qaAdvancedOptions": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "**OPTIONAL**: QA advanced configuration options. Default: null."
+    },
+    "active": {
+      "type": "boolean",
+      "description": "**READ-ONLY**: Whether job is active (computed field)."
+    },
+    "alias": {
+      "type": "string",
+      "description": "**READ-ONLY**: Job alias (auto-generated like W837054 or Q837054)."
+    },
+    "running": {
+      "type": "boolean",
+      "description": "**READ-ONLY**: Whether job is currently running (computed field)."
+    },
+    "draft": {
+      "type": "boolean",
+      "description": "**READ-ONLY**: Whether job is in draft state (computed field)."
+    },
+    "segmented": {
+      "type": "boolean",
+      "description": "**READ-ONLY**: Whether job uses segmentation (computed field)."
+    },
+    "appenConnectCrowd": {
+      "type": "boolean",
+      "description": "**READ-ONLY**: Whether using Appen Connect crowd (computed field)."
+    },
+    "multipleJudgement": {
+      "type": "boolean",
+      "description": "**READ-ONLY**: Whether multiple judgments enabled (computed from judgmentsPerRow > 1)."
+    },
+    "dynamicJudgements": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "**OPTIONAL**: Dynamic judgments configuration. Default: disabled.",
+      "properties": {
+        "enableDynamicJudgements": {
+          "type": "boolean",
+          "description": "Enable dynamic judgment adjustment. Default: false."
+        },
+        "maxDynamicJudgements": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Max dynamic judgments allowed. Range: 1-10000."
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "MINIMUM_CONFIDENCE",
+            "MATCHING_JUDGEMENTS"
+          ],
+          "description": "Dynamic judgment mode. Default: MINIMUM_CONFIDENCE."
+        },
+        "minimumConfidence": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "float",
+          "minimum": 0,
+          "maximum": 1.0,
+          "description": "Confidence threshold. Default: 0.0 (disabled), Range: 0.0-1.0."
+        },
+        "matchingJudgements": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "description": "Required matching judgments. Min: 1 when used."
+        },
+        "enabledQuestions": {
+          "type": "string",
+          "description": "JSON string of enabled questions configuration."
+        },
+        "id": {
+          "type": "string",
+          "description": "Dynamic judgments configuration ID."
+        },
+        "version": {
+          "type": "integer",
+          "description": "Dynamic judgments configuration version."
+        }
+      }
+    }
+  }
+}

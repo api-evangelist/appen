@@ -1,7 +1,7 @@
 {
   "provider": "appen",
   "sources": [
-    "appen-openapi-remote.yaml"
+    "_original/appen-openapi-remote.yaml"
   ],
   "outputs": [
     "appen-download-api-openapi.yml",
@@ -12,9 +12,7 @@
     "appen-test-questions-api-openapi.yml",
     "appen-upload-api-openapi.yml"
   ],
-  "archived": [
-    "archived openapi/appen-openapi-remote.yaml"
-  ],
+  "archived": [],
   "errors": [
     "appen-openapi-remote.yaml: dangling $ref: #/components/schemas/UpdateTestQuestionRequest"
   ],
@@ -22,9 +20,18 @@
     "appen-openapi-remote.yaml: info.version missing"
   ],
   "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
     "appen-openapi-remote.yaml: upgraded openapi 3.0.3 -> OpenAPI 3.2.0",
     "appen-openapi-remote.yaml: declared missing tag: Internal Contributors",
-    "apis.yml register: written (+7 apis, 8 total)"
+    "apis.yml register: already-registered"
   ],
-  "skipped": []
+  "skipped": [
+    "appen-download-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "appen-internal-contributors-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "appen-jobs-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "appen-projects-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "appen-route-units-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "appen-test-questions-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "appen-upload-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }
