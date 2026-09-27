@@ -407,23 +407,6 @@ paths:
                 timestamp: '2025-07-07T07:05:00.000000Z'
 components:
   schemas:
-    ErrorResponse:
-      type: object
-      required:
-      - status
-      - errorMessage
-      - traceId
-      - timestamp
-      properties:
-        status:
-          type: integer
-        errorMessage:
-          type: string
-        traceId:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
     ConflictResponse:
       type: object
       required:
@@ -441,6 +424,23 @@ components:
       properties:
         error:
           type: string
+    ErrorResponse:
+      type: object
+      required:
+      - status
+      - errorMessage
+      - traceId
+      - timestamp
+      properties:
+        status:
+          type: integer
+        errorMessage:
+          type: string
+        traceId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
   securitySchemes:
     TokenAuth:
       type: http

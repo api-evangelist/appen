@@ -13,7 +13,17 @@ x-tier-reason: enrichment pass 2026-09-22 (modular-v1; was harvest)
 specificationVersion: '0.20'
 created: '2026-09-22'
 modified: '2026-09-22'
+x-docs-platform: redocly
+x-docs-platform-confidence: medium
+x-docs-platform-checked: 2026-09-24
+x-docs-hosting: aws-cloudfront
 tags:
+- Artificial Intelligence
+- Data
+- Annotation
+- Training Data
+- Enterprise
+tags_raw:
 - AI
 - Data
 - Annotation
@@ -105,6 +115,8 @@ apis:
   humanURL: https://developer.appen.com/open-api.yaml
   baseURL: https://api.appen.com
   tags:
+  - Downloads
+  tags_raw:
   - Download
   properties:
   - type: OpenAPI
@@ -131,6 +143,8 @@ apis:
   humanURL: https://developer.appen.com/open-api.yaml
   baseURL: https://api.appen.com
   tags:
+  - Job
+  tags_raw:
   - Jobs
   properties:
   - type: OpenAPI
@@ -154,6 +168,8 @@ apis:
   humanURL: https://developer.appen.com/open-api.yaml
   baseURL: https://api.appen.com
   tags:
+  - Project
+  tags_raw:
   - Projects
   properties:
   - type: OpenAPI
