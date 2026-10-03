@@ -417,13 +417,6 @@ components:
           type: string
         message:
           type: string
-    SimpleError:
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          type: string
     ErrorResponse:
       type: object
       required:
@@ -441,6 +434,13 @@ components:
         timestamp:
           type: string
           format: date-time
+    SimpleError:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
   securitySchemes:
     TokenAuth:
       type: http
