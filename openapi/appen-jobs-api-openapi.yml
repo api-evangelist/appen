@@ -1615,69 +1615,6 @@ paths:
       - TokenAuth: []
 components:
   schemas:
-    Error:
-      type: object
-      required:
-      - timestamp
-      - status
-      - error
-      - message
-      - path
-      properties:
-        timestamp:
-          type: string
-          format: date-time
-          description: ISO 8601 timestamp when the error occurred
-        status:
-          type: integer
-          description: HTTP status code
-        error:
-          type: string
-          description: HTTP status text
-        message:
-          type: string
-          description: Human-readable error message
-        path:
-          type: string
-          description: API endpoint path that generated the error
-        trace:
-          type: string
-          description: Stack trace (only in development)
-      example:
-        timestamp: '2025-07-01T10:28:59.893+00:00'
-        status: 500
-        error: Internal Server Error
-        message: Failed to update job
-        path: /publicapi/work-service/jobs
-    Response:
-      type: object
-      required:
-      - message
-      - code
-      - data
-      - time
-      properties:
-        message:
-          type: string
-          description: Response message
-          example: success
-        code:
-          type: integer
-          description: HTTP status code
-          example: 200
-        data:
-          description: Response data (type varies by endpoint)
-        traceId:
-          type:
-          - string
-          - 'null'
-          description: Request trace identifier for debugging
-          example: null
-        time:
-          type: string
-          format: date-time
-          description: Response timestamp
-          example: '2025-07-02T10:02:04.813876Z'
     JobDTO:
       type: object
       description: 'Job Data Transfer Object for updating job settings.
@@ -2166,6 +2103,69 @@ components:
               type: integer
               description: Dynamic judgments configuration version.
               example: 0
+    Error:
+      type: object
+      required:
+      - timestamp
+      - status
+      - error
+      - message
+      - path
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the error occurred
+        status:
+          type: integer
+          description: HTTP status code
+        error:
+          type: string
+          description: HTTP status text
+        message:
+          type: string
+          description: Human-readable error message
+        path:
+          type: string
+          description: API endpoint path that generated the error
+        trace:
+          type: string
+          description: Stack trace (only in development)
+      example:
+        timestamp: '2025-07-01T10:28:59.893+00:00'
+        status: 500
+        error: Internal Server Error
+        message: Failed to update job
+        path: /publicapi/work-service/jobs
+    Response:
+      type: object
+      required:
+      - message
+      - code
+      - data
+      - time
+      properties:
+        message:
+          type: string
+          description: Response message
+          example: success
+        code:
+          type: integer
+          description: HTTP status code
+          example: 200
+        data:
+          description: Response data (type varies by endpoint)
+        traceId:
+          type:
+          - string
+          - 'null'
+          description: Request trace identifier for debugging
+          example: null
+        time:
+          type: string
+          format: date-time
+          description: Response timestamp
+          example: '2025-07-02T10:02:04.813876Z'
   securitySchemes:
     TokenAuth:
       type: http
